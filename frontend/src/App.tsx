@@ -8,6 +8,7 @@ import LeasesPage from './pages/landlord/LeasesPage'
 import PaymentsPage from './pages/landlord/PaymentsPage'
 import ScreeningPage from './pages/landlord/ScreeningPage'
 import PortalPage from './pages/tenant/PortalPage'
+import ApplyPage from './pages/tenant/ApplyPage'
 
 export default function App() {
   return (
@@ -32,6 +33,10 @@ export default function App() {
           <Route index element={<Navigate to="portal" replace />} />
           <Route path="portal" element={<PortalPage />} />
         </Route>
+
+        {/* Public application form — no auth required */}
+        <Route path="/apply/:unitId" element={<ApplyPage />} />
+        <Route path="/apply" element={<ApplyPage />} />
       </Routes>
     </BrowserRouter>
   )

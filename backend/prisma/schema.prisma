@@ -53,6 +53,19 @@ enum MaintenanceStatus {
   CLOSED
 }
 
+enum VerificationProvider {
+  PLAID
+  STRIPE_IDENTITY
+}
+
+enum VerificationStatus {
+  PENDING
+  PROCESSING
+  VERIFIED
+  FAILED
+  REQUIRES_INPUT
+}
+
 model User {
   id            String    @id @default(cuid())
   clerkId       String?   @unique
@@ -62,18 +75,16 @@ model User {
   role          Role
   phone         String?
   avatarUrl     String?
-  stripeId      String?   // Stripe customer or Connect account ID
+  stripeId      String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  // Landlord relations
-  properties    Property[]
-
-  // Tenant relations
-  leases        Lease[]
-  payments      Payment[]
+  properties          Property[]
+  leases              Lease[]
+  payments            Payment[]
   maintenanceRequests MaintenanceRequest[]
-  applications  Application[]
+  applications        Application[]
+  uploadedDocuments   Document[]
 
   @@map("users")
 }
@@ -97,22 +108,22 @@ model Property {
 }
 
 model Unit {
-  id           String     @id @default(cuid())
-  unitNumber   String
-  floor        Int?
-  bedrooms     Int
-  bathrooms    Float
-  squareFeet   Int?
-  rentAmount   Float
+  id            String     @id @default(cuid())
+  unitNumber    String
+  floor         Int?
+  bedrooms      Int
+  bathrooms     Float
+  squareFeet    Int?
+  rentAmount    Float
   depositAmount Float?
-  status       UnitStatus @default(VACANT)
-  propertyId   String
-  property     Property   @relation(fields: [propertyId], references: [id])
-  leases       Lease[]
-  applications Application[]
+  status        UnitStatus @default(VACANT)
+  propertyId    String
+  property      Property   @relation(fields: [propertyId], references: [id])
+  leases        Lease[]
+  applications  Application[]
   maintenanceRequests MaintenanceRequest[]
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   @@unique([propertyId, unitNumber])
   @@map("units")
@@ -164,18 +175,68 @@ model Application {
   applicantName   String
   applicantEmail  String
   applicantPhone  String?
+
+  // Self-reported (pre-verification)
   monthlyIncome   Float?
   creditScore     Int?
-  aiScore         Int?              // 0-100 AI screening score
-  aiSummary       String?           // AI-generated screening summary
-  status          ApplicationStatus @default(PENDING)
-  notes           String?
-  submittedAt     DateTime          @default(now())
-  reviewedAt      DateTime?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+
+  // Verified data from Plaid (no PII stored — only derived facts)
+  plaidVerified         Boolean   @default(false)
+  verifiedMonthlyIncome Float?    // from Plaid Income
+  verifiedEmployer      String?   // employer name only
+  incomeVerifiedAt      DateTime?
+
+  // Identity verification via Stripe Identity
+  identityVerified    Boolean   @default(false)
+  identityVerifiedAt  DateTime?
+
+  // AI scoring
+  aiScore     Int?
+  aiSummary   String?
+
+  status      ApplicationStatus @default(PENDING)
+  notes       String?
+  submittedAt DateTime          @default(now())
+  reviewedAt  DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  verificationSessions VerificationSession[]
+  documents            Document[]
 
   @@map("applications")
+}
+
+// Tracks external verification sessions (Plaid, Stripe Identity)
+// Stores session IDs and status only — no raw PII
+model VerificationSession {
+  id            String               @id @default(cuid())
+  applicationId String
+  application   Application          @relation(fields: [applicationId], references: [id])
+  provider      VerificationProvider
+  externalId    String               // Plaid item_id or Stripe verification session id
+  status        VerificationStatus   @default(PENDING)
+  resultSummary Json?                // sanitized non-PII result fields only
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  @@map("verification_sessions")
+}
+
+// Encrypted documents stored in R2/S3 — only the s3Key is stored here
+model Document {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id])
+  uploadedById  String
+  uploadedBy    User        @relation(fields: [uploadedById], references: [id])
+  name          String      // display name, e.g. "Pay Stub - March 2025"
+  s3Key         String      // e.g. "applications/{id}/paystub_march.pdf"
+  mimeType      String
+  sizeBytes     Int?
+  createdAt     DateTime    @default(now())
+
+  @@map("documents")
 }
 
 model MaintenanceRequest {

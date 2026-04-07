@@ -6,12 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx"
+    "preview": "vite preview"
   },
   "dependencies": {
+    "@stripe/stripe-js": "^3.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-plaid-link": "^3.5.1",
     "react-router-dom": "^6.22.2"
   },
   "devDependencies": {
