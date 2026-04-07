@@ -1,0 +1,197 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  LANDLORD
+  TENANT
+}
+
+enum UnitStatus {
+  VACANT
+  OCCUPIED
+  MAINTENANCE
+}
+
+enum LeaseStatus {
+  ACTIVE
+  EXPIRED
+  TERMINATED
+  PENDING
+}
+
+enum PaymentStatus {
+  PAID
+  DUE
+  LATE
+  PARTIAL
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum MaintenancePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum MaintenanceStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  clerkId       String?   @unique
+  email         String    @unique
+  firstName     String
+  lastName      String
+  role          Role
+  phone         String?
+  avatarUrl     String?
+  stripeId      String?   // Stripe customer or Connect account ID
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Landlord relations
+  properties    Property[]
+
+  // Tenant relations
+  leases        Lease[]
+  payments      Payment[]
+  maintenanceRequests MaintenanceRequest[]
+  applications  Application[]
+
+  @@map("users")
+}
+
+model Property {
+  id          String   @id @default(cuid())
+  name        String
+  address     String
+  city        String
+  state       String
+  zip         String
+  imageUrl    String?
+  description String?
+  landlordId  String
+  landlord    User     @relation(fields: [landlordId], references: [id])
+  units       Unit[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("properties")
+}
+
+model Unit {
+  id           String     @id @default(cuid())
+  unitNumber   String
+  floor        Int?
+  bedrooms     Int
+  bathrooms    Float
+  squareFeet   Int?
+  rentAmount   Float
+  depositAmount Float?
+  status       UnitStatus @default(VACANT)
+  propertyId   String
+  property     Property   @relation(fields: [propertyId], references: [id])
+  leases       Lease[]
+  applications Application[]
+  maintenanceRequests MaintenanceRequest[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([propertyId, unitNumber])
+  @@map("units")
+}
+
+model Lease {
+  id          String      @id @default(cuid())
+  unitId      String
+  unit        Unit        @relation(fields: [unitId], references: [id])
+  tenantId    String
+  tenant      User        @relation(fields: [tenantId], references: [id])
+  startDate   DateTime
+  endDate     DateTime
+  rentAmount  Float
+  depositPaid Float?
+  status      LeaseStatus @default(ACTIVE)
+  documentUrl String?
+  payments    Payment[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("leases")
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  leaseId         String
+  lease           Lease         @relation(fields: [leaseId], references: [id])
+  tenantId        String
+  tenant          User          @relation(fields: [tenantId], references: [id])
+  amount          Float
+  dueDate         DateTime
+  paidDate        DateTime?
+  status          PaymentStatus
+  stripePaymentId String?
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("payments")
+}
+
+model Application {
+  id              String            @id @default(cuid())
+  unitId          String
+  unit            Unit              @relation(fields: [unitId], references: [id])
+  applicantId     String?
+  applicant       User?             @relation(fields: [applicantId], references: [id])
+  applicantName   String
+  applicantEmail  String
+  applicantPhone  String?
+  monthlyIncome   Float?
+  creditScore     Int?
+  aiScore         Int?              // 0-100 AI screening score
+  aiSummary       String?           // AI-generated screening summary
+  status          ApplicationStatus @default(PENDING)
+  notes           String?
+  submittedAt     DateTime          @default(now())
+  reviewedAt      DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@map("applications")
+}
+
+model MaintenanceRequest {
+  id          String              @id @default(cuid())
+  unitId      String
+  unit        Unit                @relation(fields: [unitId], references: [id])
+  tenantId    String
+  tenant      User                @relation(fields: [tenantId], references: [id])
+  title       String
+  description String
+  priority    MaintenancePriority @default(MEDIUM)
+  status      MaintenanceStatus   @default(OPEN)
+  imageUrls   String[]
+  resolvedAt  DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@map("maintenance_requests")
+}
