@@ -68,10 +68,10 @@ export async function getIncomeVerification(publicToken: string) {
     verified: paystubs.length > 0,
     employerName: latestPaystub?.employer?.name ?? null,
     // Annualized income derived from most recent paystub
-    estimatedAnnualIncome: latestPaystub?.earnings?.total?.total_amount
-      ? latestPaystub.earnings.total.total_amount * 12
+    estimatedAnnualIncome: latestPaystub?.earnings?.total?.current_amount
+      ? latestPaystub.earnings.total.current_amount * 12
       : null,
-    estimatedMonthlyIncome: latestPaystub?.earnings?.total?.total_amount ?? null,
+    estimatedMonthlyIncome: latestPaystub?.earnings?.total?.current_amount ?? null,
     paystubCount: paystubs.length,
   }
 
