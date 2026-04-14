@@ -32,7 +32,7 @@ export async function createLinkToken(userId: string, clientName = 'Dwella') {
     country_codes: [CountryCode.Us],
     language: 'en',
     income_verification: {
-      income_source_types: ['bank', 'payroll'],
+      income_source_types: ['bank', 'payroll'] as any,
     },
   })
   return response.data
@@ -68,10 +68,10 @@ export async function getIncomeVerification(publicToken: string) {
     verified: paystubs.length > 0,
     employerName: latestPaystub?.employer?.name ?? null,
     // Annualized income derived from most recent paystub
-    estimatedAnnualIncome: latestPaystub?.earnings?.total
-      ? latestPaystub.earnings.total * 12
+    estimatedAnnualIncome: latestPaystub?.earnings?.total?.total_amount
+      ? latestPaystub.earnings.total.total_amount * 12
       : null,
-    estimatedMonthlyIncome: latestPaystub?.earnings?.total ?? null,
+    estimatedMonthlyIncome: latestPaystub?.earnings?.total?.total_amount ?? null,
     paystubCount: paystubs.length,
   }
 
@@ -91,9 +91,9 @@ export async function createPayrollLinkToken(userId: string) {
     country_codes: [CountryCode.Us],
     language: 'en',
     income_verification: {
-      income_source_types: ['payroll'],
+      income_source_types: ['payroll'] as any,
       payroll_income: {
-        flow_types: ['payroll_income_digital_payroll'],
+        flow_types: ['payroll_income_digital_payroll'] as any,
       },
     },
   })
