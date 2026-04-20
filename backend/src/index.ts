@@ -6,6 +6,7 @@ import { unitsRouter } from './routes/units'
 import { tenantsRouter } from './routes/tenants'
 import { paymentsRouter } from './routes/payments'
 import { applicationsRouter } from './routes/applications'
+import { leasesRouter } from './routes/leases'
 import { plaidRouter } from './routes/plaid'
 import { identityRouter } from './routes/identity'
 import { documentsRouter } from './routes/documents'
@@ -16,16 +17,17 @@ const PORT = process.env.PORT ?? 3001
 
 app.use(cors({ origin: process.env.FRONTEND_URL ?? 'http://localhost:5173' }))
 
-// Stripe webhooks require the raw body for signature verification —
+// Stripe and Clerk webhooks both require raw body for signature verification —
 // must be registered BEFORE express.json()
-app.post(
-  '/api/webhooks/stripe',
-  express.raw({ type: 'application/json' }),
-  (req, res, next) => {
-    // Route to webhooks router after raw body is captured
-    webhooksRouter(req, res, next)
-  }
-)
+const rawBody = express.raw({ type: 'application/json' })
+
+app.post('/api/webhooks/stripe', rawBody, (req, res, next) => {
+  webhooksRouter(req, res, next)
+})
+
+app.post('/api/webhooks/clerk', rawBody, (req, res, next) => {
+  webhooksRouter(req, res, next)
+})
 
 app.use(express.json())
 
@@ -40,6 +42,7 @@ app.use('/api/units', unitsRouter)
 app.use('/api/tenants', tenantsRouter)
 app.use('/api/payments', paymentsRouter)
 app.use('/api/applications', applicationsRouter)
+app.use('/api/leases', leasesRouter)
 
 // Verification & document routes
 app.use('/api/plaid', plaidRouter)

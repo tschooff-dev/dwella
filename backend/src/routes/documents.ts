@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { prisma } from '../lib/prisma'
+import { requireAuth, AuthenticatedRequest } from '../middleware/auth'
 import {
   getPresignedUploadUrl,
   getPresignedDownloadUrl,
@@ -107,20 +108,23 @@ documentsRouter.post('/confirm', async (req, res) => {
  * GET /api/documents/:applicationId
  *
  * List all documents for an application (metadata only, no file contents).
- * Only the landlord who owns the property should call this.
+ * Only the landlord who owns the property may call this.
  */
-documentsRouter.get('/:applicationId', async (req, res) => {
+documentsRouter.get('/:applicationId', requireAuth, async (req, res) => {
+  const authReq = req as AuthenticatedRequest
   try {
+    const application = await prisma.application.findUnique({
+      where: { id: req.params.applicationId },
+      include: { unit: { include: { property: { include: { landlord: { select: { clerkId: true } } } } } } },
+    })
+    if (!application) return res.status(404).json({ error: 'Application not found' })
+    if (application.unit.property.landlord.clerkId !== authReq.auth.userId) {
+      return res.status(403).json({ error: 'Forbidden' })
+    }
+
     const documents = await prisma.document.findMany({
       where: { applicationId: req.params.applicationId },
-      select: {
-        id: true,
-        name: true,
-        mimeType: true,
-        sizeBytes: true,
-        createdAt: true,
-        // Never return s3Key in list responses
-      },
+      select: { id: true, name: true, mimeType: true, sizeBytes: true, createdAt: true },
       orderBy: { createdAt: 'desc' },
     })
     res.json(documents)
@@ -133,26 +137,27 @@ documentsRouter.get('/:applicationId', async (req, res) => {
  * GET /api/documents/:applicationId/:documentId/download
  *
  * Returns a short-lived presigned download URL (15 min).
- * TODO: verify the requesting user is the landlord for this application's property.
+ * Only the landlord who owns the property may download.
  */
-documentsRouter.get('/:applicationId/:documentId/download', async (req, res) => {
+documentsRouter.get('/:applicationId/:documentId/download', requireAuth, async (req, res) => {
+  const authReq = req as AuthenticatedRequest
   try {
     const document = await prisma.document.findFirst({
-      where: {
-        id: req.params.documentId,
-        applicationId: req.params.applicationId,
+      where: { id: req.params.documentId, applicationId: req.params.applicationId },
+      include: {
+        application: {
+          include: { unit: { include: { property: { include: { landlord: { select: { clerkId: true } } } } } } },
+        },
       },
     })
 
-    if (!document) {
-      return res.status(404).json({ error: 'Document not found' })
+    if (!document) return res.status(404).json({ error: 'Document not found' })
+
+    if (document.application.unit.property.landlord.clerkId !== authReq.auth.userId) {
+      return res.status(403).json({ error: 'Forbidden' })
     }
 
-    // TODO: add authorization check here before wiring to production
-    // Verify req.auth.userId is the landlord for this application's property
-
     const downloadUrl = await getPresignedDownloadUrl(document.s3Key)
-
     res.json({ downloadUrl, expiresInSeconds: 900 })
   } catch (err) {
     console.error('Download URL error:', err)

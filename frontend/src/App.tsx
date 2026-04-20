@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { SignIn, SignUp, useAuth } from '@clerk/clerk-react'
 import LandlordLayout from './layouts/LandlordLayout'
 import TenantLayout from './layouts/TenantLayout'
 import DashboardPage from './pages/landlord/DashboardPage'
@@ -10,15 +11,31 @@ import ScreeningPage from './pages/landlord/ScreeningPage'
 import PortalPage from './pages/tenant/PortalPage'
 import ApplyPage from './pages/tenant/ApplyPage'
 
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isSignedIn, isLoaded } = useAuth()
+  if (!isLoaded) return null
+  if (!isSignedIn) return <Navigate to="/sign-in" replace />
+  return <>{children}</>
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Redirect root to landlord dashboard for demo */}
         <Route path="/" element={<Navigate to="/landlord/dashboard" replace />} />
 
+        {/* Auth pages */}
+        <Route
+          path="/sign-in/*"
+          element={<div className="min-h-screen flex items-center justify-center bg-gray-50"><SignIn routing="path" path="/sign-in" /></div>}
+        />
+        <Route
+          path="/sign-up/*"
+          element={<div className="min-h-screen flex items-center justify-center bg-gray-50"><SignUp routing="path" path="/sign-up" /></div>}
+        />
+
         {/* Landlord routes */}
-        <Route path="/landlord" element={<LandlordLayout />}>
+        <Route path="/landlord" element={<ProtectedRoute><LandlordLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="properties" element={<PropertiesPage />} />
@@ -29,7 +46,7 @@ export default function App() {
         </Route>
 
         {/* Tenant routes */}
-        <Route path="/tenant" element={<TenantLayout />}>
+        <Route path="/tenant" element={<ProtectedRoute><TenantLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="portal" replace />} />
           <Route path="portal" element={<PortalPage />} />
         </Route>

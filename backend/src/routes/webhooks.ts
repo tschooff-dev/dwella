@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express'
+import { Webhook } from 'svix'
 import { prisma } from '../lib/prisma'
 import { stripe } from '../lib/stripe'
 
@@ -120,12 +121,30 @@ webhooksRouter.post(
  * Called when a new user signs up via Clerk.
  */
 webhooksRouter.post('/clerk', async (req: Request, res: Response) => {
-  // TODO: verify Clerk webhook signature with svix
-  // import { Webhook } from 'svix'
-  // const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET)
-  // const evt = wh.verify(req.body, headers)
+  const webhookSecret = process.env.CLERK_WEBHOOK_SECRET
+  if (!webhookSecret) return res.status(400).json({ error: 'Webhook secret not configured' })
 
-  const { type, data } = req.body
+  const svixId = req.headers['svix-id'] as string
+  const svixTimestamp = req.headers['svix-timestamp'] as string
+  const svixSignature = req.headers['svix-signature'] as string
+
+  if (!svixId || !svixTimestamp || !svixSignature) {
+    return res.status(400).json({ error: 'Missing svix headers' })
+  }
+
+  let payload: { type: string; data: any }
+  try {
+    const wh = new Webhook(webhookSecret)
+    payload = wh.verify(req.body, {
+      'svix-id': svixId,
+      'svix-timestamp': svixTimestamp,
+      'svix-signature': svixSignature,
+    }) as any
+  } catch (err) {
+    return res.status(400).json({ error: 'Invalid webhook signature' })
+  }
+
+  const { type, data } = payload
 
   try {
     if (type === 'user.created' || type === 'user.updated') {

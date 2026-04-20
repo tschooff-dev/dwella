@@ -1,52 +1,27 @@
+import { ClerkExpressRequireAuth, RequireAuthProp } from '@clerk/clerk-sdk-node'
 import { Request, Response, NextFunction } from 'express'
+import { prisma } from '../lib/prisma'
 
-/**
- * Clerk auth middleware placeholder.
- *
- * To enable real auth:
- * 1. npm install @clerk/clerk-sdk-node
- * 2. Replace this middleware with:
- *    import { ClerkExpressRequireAuth } from '@clerk/clerk-sdk-node'
- *    export const requireAuth = ClerkExpressRequireAuth()
- *
- * The Clerk SDK will verify the session token from the Authorization header
- * and attach the auth object to req.auth.
- */
+export type AuthenticatedRequest = RequireAuthProp<Request>
 
-export interface AuthenticatedRequest extends Request {
-  auth?: {
-    userId: string
-    sessionId: string
-  }
-}
+export const requireAuth = ClerkExpressRequireAuth()
 
-/**
- * Placeholder middleware — allows all requests through in development.
- * Replace with real Clerk middleware before going to production.
- */
-export function requireAuth(req: AuthenticatedRequest, _res: Response, next: NextFunction) {
-  // TODO: Replace with Clerk auth
-  // In dev, attach a mock user so routes work without a real session
-  req.auth = {
-    userId: 'dev_user_landlord',
-    sessionId: 'dev_session',
-  }
+export async function requireLandlord(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  const clerkId = req.auth.userId
+  if (!clerkId) return res.status(401).json({ error: 'Unauthorized' })
+
+  const user = await prisma.user.findUnique({ where: { clerkId }, select: { role: true } })
+  if (!user || user.role !== 'LANDLORD') return res.status(403).json({ error: 'Forbidden' })
+
   next()
 }
 
-/**
- * Require landlord role.
- * Extend once real auth is in place to check the user's role from the database.
- */
-export function requireLandlord(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-  // TODO: check req.auth.userId against DB to verify LANDLORD role
-  next()
-}
+export async function requireTenant(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  const clerkId = req.auth.userId
+  if (!clerkId) return res.status(401).json({ error: 'Unauthorized' })
 
-/**
- * Require tenant role.
- */
-export function requireTenant(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-  // TODO: check req.auth.userId against DB to verify TENANT role
+  const user = await prisma.user.findUnique({ where: { clerkId }, select: { role: true } })
+  if (!user || user.role !== 'TENANT') return res.status(403).json({ error: 'Forbidden' })
+
   next()
 }
