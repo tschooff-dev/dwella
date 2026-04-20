@@ -11,11 +11,26 @@ import { plaidRouter } from './routes/plaid'
 import { identityRouter } from './routes/identity'
 import { documentsRouter } from './routes/documents'
 import { webhooksRouter } from './routes/webhooks'
+import { usersRouter } from './routes/users'
 
 const app = express()
 const PORT = process.env.PORT ?? 3001
 
-app.use(cors({ origin: process.env.FRONTEND_URL ?? 'http://localhost:5173' }))
+const allowedOrigins = new Set([
+  process.env.FRONTEND_URL ?? 'http://localhost:5173',
+  'http://localhost:5173',
+])
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.has(origin) || origin.endsWith('.vercel.app')) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
+  credentials: true,
+}))
 
 // Stripe and Clerk webhooks both require raw body for signature verification —
 // must be registered BEFORE express.json()
@@ -43,6 +58,7 @@ app.use('/api/tenants', tenantsRouter)
 app.use('/api/payments', paymentsRouter)
 app.use('/api/applications', applicationsRouter)
 app.use('/api/leases', leasesRouter)
+app.use('/api/users', usersRouter)
 
 // Verification & document routes
 app.use('/api/plaid', plaidRouter)

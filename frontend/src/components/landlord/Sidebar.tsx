@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
+import { useUser, useClerk } from '@clerk/clerk-react'
 
 const navItems = [
   {
@@ -54,12 +55,19 @@ const navItems = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
       </svg>
     ),
-    badge: '4',
   },
 ]
 
 export default function Sidebar() {
   const navigate = useNavigate()
+  const { user } = useUser()
+  const { signOut } = useClerk()
+
+  const displayName = user ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || user.primaryEmailAddress?.emailAddress : ''
+  const email = user?.primaryEmailAddress?.emailAddress ?? ''
+  const initials = displayName
+    ? displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : '?'
 
   return (
     <aside className="w-60 bg-white border-r border-gray-100 flex flex-col h-full shrink-0">
@@ -97,11 +105,6 @@ export default function Sidebar() {
               {item.icon}
               {item.label}
             </div>
-            {item.badge && (
-              <span className="text-[10px] font-semibold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">
-                {item.badge}
-              </span>
-            )}
           </NavLink>
         ))}
       </nav>
@@ -117,14 +120,25 @@ export default function Sidebar() {
           </svg>
           Switch to Tenant View
         </button>
-        <div className="flex items-center gap-2.5 px-2">
-          <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-            <span className="text-[10px] font-bold text-indigo-700">MH</span>
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
+              <span className="text-[10px] font-bold text-indigo-700">{initials}</span>
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs font-medium text-gray-900 truncate">{displayName}</div>
+              <div className="text-[10px] text-gray-400 truncate">{email}</div>
+            </div>
           </div>
-          <div className="min-w-0">
-            <div className="text-xs font-medium text-gray-900 truncate">Marcus Holt</div>
-            <div className="text-[10px] text-gray-400 truncate">owner@dwella.app</div>
-          </div>
+          <button
+            onClick={() => signOut(() => navigate('/sign-in'))}
+            className="text-[10px] text-gray-400 hover:text-gray-600 shrink-0 ml-2"
+            title="Sign out"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
         </div>
       </div>
     </aside>
