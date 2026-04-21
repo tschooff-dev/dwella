@@ -9,7 +9,7 @@ interface UploadedDoc {
 
 interface DocumentUploadProps {
   applicationId: string
-  uploadedById: string
+  uploadedById?: string
   onUploaded?: (doc: UploadedDoc) => void
 }
 

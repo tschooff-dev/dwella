@@ -35,8 +35,8 @@ documentsRouter.post('/upload-url', async (req, res) => {
   try {
     const { applicationId, fileName, mimeType, sizeBytes, uploadedById } = req.body
 
-    if (!applicationId || !fileName || !mimeType || !uploadedById) {
-      return res.status(400).json({ error: 'applicationId, fileName, mimeType, and uploadedById are required' })
+    if (!applicationId || !fileName || !mimeType) {
+      return res.status(400).json({ error: 'applicationId, fileName, and mimeType are required' })
     }
 
     if (!ALLOWED_MIME_TYPES.has(mimeType)) {
@@ -76,7 +76,7 @@ documentsRouter.post('/confirm', async (req, res) => {
   try {
     const { applicationId, s3Key, fileName, mimeType, sizeBytes, uploadedById } = req.body
 
-    if (!applicationId || !s3Key || !fileName || !mimeType || !uploadedById) {
+    if (!applicationId || !s3Key || !fileName || !mimeType) {
       return res.status(400).json({ error: 'Missing required fields' })
     }
 
@@ -89,7 +89,7 @@ documentsRouter.post('/confirm', async (req, res) => {
     const document = await prisma.document.create({
       data: {
         applicationId,
-        uploadedById,
+        uploadedById: uploadedById ?? null,
         name: fileName,
         s3Key,
         mimeType,

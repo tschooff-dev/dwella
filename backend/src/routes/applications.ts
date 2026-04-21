@@ -54,6 +54,52 @@ applicationsRouter.get('/:id', requireAuth, async (req, res: Response) => {
   }
 })
 
+// GET /api/applications/unit/:unitId — public, returns unit info for apply page
+applicationsRouter.get('/unit/:unitId', async (req, res) => {
+  try {
+    const unit = await prisma.unit.findUnique({
+      where: { id: req.params.unitId },
+      select: {
+        id: true,
+        unitNumber: true,
+        bedrooms: true,
+        bathrooms: true,
+        squareFeet: true,
+        rentAmount: true,
+        depositAmount: true,
+        status: true,
+        property: { select: { id: true, name: true, address: true, city: true, state: true } },
+      },
+    })
+    if (!unit) return res.status(404).json({ error: 'Unit not found' })
+    res.json(unit)
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch unit' })
+  }
+})
+
+// PATCH /api/applications/:id/applicant-update — public, applicant updates their own application
+applicationsRouter.patch('/:id/applicant-update', async (req, res) => {
+  try {
+    const { previousLandlordName, previousLandlordPhone, ssnLastFour, backgroundCheckConsent } = req.body
+    const application = await prisma.application.update({
+      where: { id: req.params.id },
+      data: {
+        ...(previousLandlordName != null ? { previousLandlordName } : {}),
+        ...(previousLandlordPhone != null ? { previousLandlordPhone } : {}),
+        ...(ssnLastFour != null ? { ssnLastFour } : {}),
+        ...(backgroundCheckConsent != null ? {
+          backgroundCheckConsent,
+          consentAt: backgroundCheckConsent ? new Date() : null,
+        } : {}),
+      },
+    })
+    res.json({ id: application.id, status: application.status })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update application' })
+  }
+})
+
 // POST /api/applications — public endpoint, no auth (applicants submit their own)
 applicationsRouter.post('/', async (req, res) => {
   try {

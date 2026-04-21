@@ -159,6 +159,7 @@ model Payment {
   paidDate        DateTime?
   status          PaymentStatus
   stripePaymentId String?
+  method          String?
   notes           String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -189,6 +190,13 @@ model Application {
   // Identity verification via Stripe Identity
   identityVerified    Boolean   @default(false)
   identityVerifiedAt  DateTime?
+
+  // References & consent
+  previousLandlordName  String?
+  previousLandlordPhone String?
+  ssnLastFour           String?
+  backgroundCheckConsent Boolean  @default(false)
+  consentAt             DateTime?
 
   // AI scoring
   aiScore     Int?
@@ -228,8 +236,8 @@ model Document {
   id            String      @id @default(cuid())
   applicationId String
   application   Application @relation(fields: [applicationId], references: [id])
-  uploadedById  String
-  uploadedBy    User        @relation(fields: [uploadedById], references: [id])
+  uploadedById  String?
+  uploadedBy    User?       @relation(fields: [uploadedById], references: [id])
   name          String      // display name, e.g. "Pay Stub - March 2025"
   s3Key         String      // e.g. "applications/{id}/paystub_march.pdf"
   mimeType      String
