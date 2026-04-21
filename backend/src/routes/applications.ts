@@ -1,21 +1,30 @@
-import { Router } from 'express'
+import { Router, Response } from 'express'
 import { prisma } from '../lib/prisma'
+import { requireAuth, AuthenticatedRequest } from '../middleware/auth'
 
 export const applicationsRouter = Router()
 
-// GET /api/applications
-applicationsRouter.get('/', async (req, res) => {
+async function getLandlordId(clerkId: string) {
+  const user = await prisma.user.findUnique({ where: { clerkId }, select: { id: true } })
+  return user?.id ?? null
+}
+
+// GET /api/applications — scoped to landlord's units, optional ?status=
+applicationsRouter.get('/', requireAuth, async (req, res: Response) => {
+  const authReq = req as AuthenticatedRequest
   try {
+    const landlordId = await getLandlordId(authReq.auth.userId)
+    if (!landlordId) return res.status(401).json({ error: 'Unauthorized' })
+
     const { status, unitId } = req.query
     const applications = await prisma.application.findMany({
       where: {
+        unit: { property: { landlordId } },
         ...(status ? { status: String(status) as any } : {}),
         ...(unitId ? { unitId: String(unitId) } : {}),
       },
       include: {
-        unit: {
-          include: { property: { select: { id: true, name: true } } },
-        },
+        unit: { include: { property: { select: { id: true, name: true } } } },
       },
       orderBy: { submittedAt: 'desc' },
     })
@@ -26,13 +35,16 @@ applicationsRouter.get('/', async (req, res) => {
 })
 
 // GET /api/applications/:id
-applicationsRouter.get('/:id', async (req, res) => {
+applicationsRouter.get('/:id', requireAuth, async (req, res: Response) => {
+  const authReq = req as AuthenticatedRequest
   try {
-    const application = await prisma.application.findUnique({
-      where: { id: req.params.id },
+    const landlordId = await getLandlordId(authReq.auth.userId)
+    if (!landlordId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const application = await prisma.application.findFirst({
+      where: { id: req.params.id, unit: { property: { landlordId } } },
       include: {
         unit: { include: { property: true } },
-        applicant: true,
       },
     })
     if (!application) return res.status(404).json({ error: 'Application not found' })
@@ -42,13 +54,11 @@ applicationsRouter.get('/:id', async (req, res) => {
   }
 })
 
-// POST /api/applications
+// POST /api/applications — public endpoint, no auth (applicants submit their own)
 applicationsRouter.post('/', async (req, res) => {
   try {
     const { unitId, applicantName, applicantEmail, applicantPhone, monthlyIncome, creditScore } = req.body
 
-    // Placeholder AI scoring logic
-    // In production: call OpenAI or your AI service here
     const aiScore = computeAiScore(monthlyIncome, creditScore)
     const aiSummary = generateAiSummary(applicantName, monthlyIncome, creditScore, aiScore)
 
@@ -72,15 +82,23 @@ applicationsRouter.post('/', async (req, res) => {
 })
 
 // PATCH /api/applications/:id — approve or reject
-applicationsRouter.patch('/:id', async (req, res) => {
+applicationsRouter.patch('/:id', requireAuth, async (req, res: Response) => {
+  const authReq = req as AuthenticatedRequest
   try {
+    const landlordId = await getLandlordId(authReq.auth.userId)
+    if (!landlordId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const existing = await prisma.application.findFirst({
+      where: { id: req.params.id, unit: { property: { landlordId } } },
+    })
+    if (!existing) return res.status(404).json({ error: 'Application not found' })
+
     const { status, notes } = req.body
     const application = await prisma.application.update({
       where: { id: req.params.id },
-      data: {
-        status,
-        notes,
-        reviewedAt: new Date(),
+      data: { status, notes, reviewedAt: new Date() },
+      include: {
+        unit: { include: { property: { select: { id: true, name: true } } } },
       },
     })
     res.json(application)
@@ -89,7 +107,6 @@ applicationsRouter.patch('/:id', async (req, res) => {
   }
 })
 
-// Placeholder AI scoring — replace with real AI call
 function computeAiScore(monthlyIncome: number | null, creditScore: number | null): number {
   let score = 50
   if (monthlyIncome) {
