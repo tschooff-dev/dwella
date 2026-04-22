@@ -14,7 +14,14 @@ async function getTenantUserFull(clerkId: string) {
 }
 
 async function ensureStripeCustomer(userId: string, email: string, stripeId: string | null): Promise<string> {
-  if (stripeId) return stripeId
+  if (stripeId) {
+    // Verify the customer still exists in Stripe (may have been deleted or belong to a different account)
+    try {
+      const existing = await stripe.customers.retrieve(stripeId)
+      if (!existing.deleted) return stripeId
+    } catch {}
+    // Customer not found — fall through to create a new one
+  }
   const customer = await stripe.customers.create({ email, metadata: { tenantId: userId } })
   await prisma.user.update({ where: { id: userId }, data: { stripeId: customer.id } })
   return customer.id
