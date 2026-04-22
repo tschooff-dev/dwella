@@ -108,12 +108,17 @@ export default function Sidebar() {
   return (
     <aside style={SIDEBAR}>
       {/* Logo */}
-      <div style={{ padding: '18px 18px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <svg width="120" height="31" viewBox="0 0 200 52" xmlns="http://www.w3.org/2000/svg">
-          <rect width="52" height="52" rx="13" fill="#4f46e5" />
-          <path fillRule="evenodd" d="M9 48 L9 24 A17 17 0 0 1 43 24 L43 48 Z M19 48 L19 37 Q19 33 26 33 Q33 33 33 37 L33 48 Z" fill="white" />
-          <text x="66" y="34" fontFamily="'Plus Jakarta Sans', Helvetica Neue, sans-serif" fontSize="24" fontWeight="800" fill="white" letterSpacing="-0.5">Dwella</text>
-        </svg>
+      <div style={{ padding: '20px 18px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+          <svg width="38" height="38" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+            <rect width="52" height="52" rx="13" fill="#4f46e5" />
+            <path fillRule="evenodd" d="M9 48 L9 24 A17 17 0 0 1 43 24 L43 48 Z M19 48 L19 37 Q19 33 26 33 Q33 33 33 37 L33 48 Z" fill="white" />
+          </svg>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>Dwella</div>
+            <div style={{ fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 2 }}>Property Management</div>
+          </div>
+        </div>
       </div>
 
       {/* Nav */}
