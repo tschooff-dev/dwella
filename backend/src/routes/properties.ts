@@ -1,38 +1,45 @@
-import { Router } from 'express'
+import { Router, Response } from 'express'
 import { prisma } from '../lib/prisma'
+import { requireAuth, AuthenticatedRequest } from '../middleware/auth'
 
 export const propertiesRouter = Router()
 
+async function getLandlordId(clerkId: string) {
+  const user = await prisma.user.findUnique({ where: { clerkId }, select: { id: true } })
+  return user?.id ?? null
+}
+
 // GET /api/properties
-propertiesRouter.get('/', async (_req, res) => {
+propertiesRouter.get('/', requireAuth, async (req, res: Response) => {
+  const authReq = req as AuthenticatedRequest
   try {
+    const landlordId = await getLandlordId(authReq.auth.userId)
+    if (!landlordId) return res.status(401).json({ error: 'Unauthorized' })
+
     const properties = await prisma.property.findMany({
+      where: { landlordId },
       include: {
         units: {
-          select: {
-            id: true,
-            unitNumber: true,
-            status: true,
-            rentAmount: true,
-            bedrooms: true,
-            bathrooms: true,
-          },
+          select: { id: true, unitNumber: true, status: true, rentAmount: true, bedrooms: true, bathrooms: true },
         },
-        _count: { select: { units: true } },
       },
       orderBy: { createdAt: 'desc' },
     })
     res.json(properties)
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to fetch properties' })
   }
 })
 
 // GET /api/properties/:id
-propertiesRouter.get('/:id', async (req, res) => {
+propertiesRouter.get('/:id', requireAuth, async (req, res: Response) => {
+  const authReq = req as AuthenticatedRequest
   try {
-    const property = await prisma.property.findUnique({
-      where: { id: req.params.id },
+    const landlordId = await getLandlordId(authReq.auth.userId)
+    if (!landlordId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const property = await prisma.property.findFirst({
+      where: { id: req.params.id, landlordId },
       include: {
         units: {
           include: {
@@ -46,43 +53,66 @@ propertiesRouter.get('/:id', async (req, res) => {
     })
     if (!property) return res.status(404).json({ error: 'Property not found' })
     res.json(property)
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to fetch property' })
   }
 })
 
 // POST /api/properties
-propertiesRouter.post('/', async (req, res) => {
+propertiesRouter.post('/', requireAuth, async (req, res: Response) => {
+  const authReq = req as AuthenticatedRequest
   try {
-    const { name, address, city, state, zip, description, landlordId } = req.body
+    const landlordId = await getLandlordId(authReq.auth.userId)
+    if (!landlordId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const { name, address, city, state, zip, description, portfolioId } = req.body
     const property = await prisma.property.create({
-      data: { name, address, city, state, zip, description, landlordId },
+      data: { name, address, city, state, zip, description, landlordId, portfolioId: portfolioId || null },
+      include: { units: true },
     })
     res.status(201).json(property)
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to create property' })
   }
 })
 
 // PATCH /api/properties/:id
-propertiesRouter.patch('/:id', async (req, res) => {
+propertiesRouter.patch('/:id', requireAuth, async (req, res: Response) => {
+  const authReq = req as AuthenticatedRequest
   try {
-    const property = await prisma.property.update({
-      where: { id: req.params.id },
-      data: req.body,
+    const landlordId = await getLandlordId(authReq.auth.userId)
+    if (!landlordId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const { name, address, city, state, zip, description, portfolioId } = req.body
+    const property = await prisma.property.updateMany({
+      where: { id: req.params.id, landlordId },
+      data: {
+        ...(name !== undefined && { name }),
+        ...(address !== undefined && { address }),
+        ...(city !== undefined && { city }),
+        ...(state !== undefined && { state }),
+        ...(zip !== undefined && { zip }),
+        ...(description !== undefined && { description }),
+        ...('portfolioId' in req.body && { portfolioId: portfolioId || null }),
+      },
     })
-    res.json(property)
-  } catch (err) {
+    if (!property.count) return res.status(404).json({ error: 'Property not found' })
+    res.json({ ok: true })
+  } catch {
     res.status(500).json({ error: 'Failed to update property' })
   }
 })
 
 // DELETE /api/properties/:id
-propertiesRouter.delete('/:id', async (req, res) => {
+propertiesRouter.delete('/:id', requireAuth, async (req, res: Response) => {
+  const authReq = req as AuthenticatedRequest
   try {
-    await prisma.property.delete({ where: { id: req.params.id } })
+    const landlordId = await getLandlordId(authReq.auth.userId)
+    if (!landlordId) return res.status(401).json({ error: 'Unauthorized' })
+
+    await prisma.property.deleteMany({ where: { id: req.params.id, landlordId } })
     res.status(204).send()
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to delete property' })
   }
 })

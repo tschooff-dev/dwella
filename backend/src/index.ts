@@ -2,6 +2,7 @@ import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import { propertiesRouter } from './routes/properties'
+import { portfoliosRouter } from './routes/portfolios'
 import { unitsRouter } from './routes/units'
 import { tenantsRouter } from './routes/tenants'
 import { paymentsRouter } from './routes/payments'
@@ -56,6 +57,7 @@ app.get('/health', (_req, res) => {
 
 // Core API routes
 app.use('/api/properties', propertiesRouter)
+app.use('/api/portfolios', portfoliosRouter)
 app.use('/api/units', unitsRouter)
 app.use('/api/tenants', tenantsRouter)
 app.use('/api/payments', paymentsRouter)
