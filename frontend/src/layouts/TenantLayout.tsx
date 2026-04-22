@@ -55,16 +55,13 @@ export default function TenantLayout() {
       {/* Top bar */}
       <header style={{ background: '#0d0f18', position: 'sticky', top: 0, zIndex: 30 }}>
         <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="17" height="17" fill="none" stroke="white" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-            </div>
-            <div>
-              <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>Dwella</span>
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginLeft: 6 }}>Resident Portal</span>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <svg width="90" height="23" viewBox="0 0 200 52" xmlns="http://www.w3.org/2000/svg">
+              <rect width="52" height="52" rx="13" fill="#4f46e5" />
+              <path fillRule="evenodd" d="M9 48 L9 24 A17 17 0 0 1 43 24 L43 48 Z M19 48 L19 37 Q19 33 26 33 Q33 33 33 37 L33 48 Z" fill="white" />
+              <text x="66" y="34" fontFamily="'Plus Jakarta Sans', Helvetica Neue, sans-serif" fontSize="24" fontWeight="800" fill="white" letterSpacing="-0.5">Dwella</text>
+            </svg>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', borderLeft: '1px solid rgba(255,255,255,0.15)', paddingLeft: 12 }}>Resident Portal</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Avatar name={displayName || '?'} size={28} />

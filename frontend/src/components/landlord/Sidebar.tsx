@@ -108,28 +108,12 @@ export default function Sidebar() {
   return (
     <aside style={SIDEBAR}>
       {/* Logo */}
-      <div style={{ padding: '20px 18px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div
-            style={{
-              width: 34,
-              height: 34,
-              borderRadius: 9,
-              background: '#4f46e5',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <svg width="18" height="18" fill="none" stroke="white" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-          </div>
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 800, color: '#fff', lineHeight: 1 }}>Dwella</div>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>Property Management</div>
-          </div>
-        </div>
+      <div style={{ padding: '18px 18px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <svg width="120" height="31" viewBox="0 0 200 52" xmlns="http://www.w3.org/2000/svg">
+          <rect width="52" height="52" rx="13" fill="#4f46e5" />
+          <path fillRule="evenodd" d="M9 48 L9 24 A17 17 0 0 1 43 24 L43 48 Z M19 48 L19 37 Q19 33 26 33 Q33 33 33 37 L33 48 Z" fill="white" />
+          <text x="66" y="34" fontFamily="'Plus Jakarta Sans', Helvetica Neue, sans-serif" fontSize="24" fontWeight="800" fill="white" letterSpacing="-0.5">Dwella</text>
+        </svg>
       </div>
 
       {/* Nav */}
