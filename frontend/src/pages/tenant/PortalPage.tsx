@@ -368,16 +368,30 @@ function OverviewTab({ me, payments, onPay, paying, onNavigateToMessages }: { me
 
   const landlordName = lease ? `${lease.unit.property.landlord.firstName} ${lease.unit.property.landlord.lastName}` : ''
 
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+  const firstName = me.user.firstName
+
   if (!lease) {
     return (
-      <div className="card" style={{ padding: 32, textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>
-        No active lease found. Contact your landlord.
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ marginBottom: 4 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#0d0f18' }}>{greeting}, {firstName} 👋</h1>
+          <p style={{ fontSize: 13, color: '#6b7280', marginTop: 4 }}>No active lease found. Contact your landlord.</p>
+        </div>
       </div>
     )
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Greeting */}
+      <div style={{ marginBottom: 4 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 800, color: '#0d0f18' }}>{greeting}, {firstName} 👋</h1>
+        <p style={{ fontSize: 13, color: '#6b7280', marginTop: 4 }}>
+          {lease.unit.property.name} · Unit {lease.unit.unitNumber} · {lease.unit.property.address}, {lease.unit.property.city}
+        </p>
+      </div>
       {/* Hero */}
       <div style={{ background: next ? hs.heroBg : PAY_STYLE.PAID.heroBg, borderRadius: 16, padding: '28px 28px 24px', color: '#fff', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', right: -20, top: -20, opacity: 0.08, fontSize: 120, fontWeight: 900, lineHeight: 1, userSelect: 'none', pointerEvents: 'none' }}>$</div>
