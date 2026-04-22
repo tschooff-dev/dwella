@@ -775,12 +775,12 @@ export default function PropertiesPage() {
   }
 
   return (
-    <div className="p-7">
+    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '36px 40px' }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-7">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Properties</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 style={{ fontSize: 22, fontWeight: 800 }}>Properties</h1>
+          <p style={{ fontSize: 13, color: '#6b7280', marginTop: 4 }}>
             {properties === null
               ? 'Loading…'
               : `${totalProperties} ${totalProperties === 1 ? 'property' : 'properties'} · ${totalUnits} units${portfolios.length > 0 ? ` · ${portfolios.length} portfolios` : ''}`}

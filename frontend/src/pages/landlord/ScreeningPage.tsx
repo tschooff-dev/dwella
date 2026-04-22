@@ -227,12 +227,12 @@ export default function ScreeningPage() {
   const counts = { PENDING: allApps.filter(a => a.status === 'PENDING').length, APPROVED: allApps.filter(a => a.status === 'APPROVED').length, REJECTED: allApps.filter(a => a.status === 'REJECTED').length }
 
   return (
-    <div className="p-7">
-      <div className="flex items-center justify-between mb-6">
+    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '36px 40px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">AI Tenant Screening</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {loading ? 'Loading…' : `${counts.PENDING} pending · powered by AI scoring`}
+          <h1 style={{ fontSize: 22, fontWeight: 800 }}>Screening</h1>
+          <p style={{ fontSize: 13, color: '#6b7280', marginTop: 4 }}>
+            {loading ? 'Loading…' : `${counts.PENDING} application${counts.PENDING !== 1 ? 's' : ''} pending review`}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -247,15 +247,20 @@ export default function ScreeningPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-5 bg-gray-100 rounded-xl p-1 w-fit">
+      <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
         {(['PENDING', 'APPROVED', 'REJECTED'] as Tab[]).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${tab === t ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            style={{
+              padding: '6px 16px', borderRadius: 20, border: '1.5px solid', fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
+              background: tab === t ? '#4f46e5' : 'transparent',
+              borderColor: tab === t ? '#4f46e5' : '#e6e6ef',
+              color: tab === t ? '#fff' : '#6b7280',
+            }}
           >
             {t.charAt(0) + t.slice(1).toLowerCase()}
-            {counts[t] > 0 && <span className="ml-1.5 text-[10px] text-gray-400">{counts[t]}</span>}
+            {counts[t] > 0 && <span style={{ opacity: 0.7 }}> ({counts[t]})</span>}
           </button>
         ))}
       </div>

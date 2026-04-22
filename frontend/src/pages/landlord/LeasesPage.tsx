@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import StatusPill from '../../components/ui/StatusPill'
 import { useApi } from '../../lib/api'
+import Avatar from '../../components/ui/Avatar'
 
 interface Lease {
   id: string
@@ -25,11 +25,11 @@ function fmt(d: string) {
   return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function ExpiryBadge({ days }: { days: number }) {
-  if (days < 0) return <span className="text-[10px] font-semibold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full">Expired</span>
-  if (days <= 14) return <span className="text-[10px] font-semibold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full">{days}d left</span>
-  if (days <= 60) return <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">{days}d left</span>
-  return <span className="text-[10px] text-gray-400">{days}d left</span>
+function DaysLeftBadge({ days }: { days: number }) {
+  if (days < 0) return <span className="badge badge-late">Expired</span>
+  if (days <= 14) return <span className="badge badge-late">{days}d left</span>
+  if (days <= 60) return <span className="badge badge-due">{days}d left</span>
+  return <span style={{ fontSize: 12, color: '#9ca3af' }}>{days}d</span>
 }
 
 function RenewDrawer({ lease, onClose, onRenewed }: { lease: Lease; onClose: () => void; onRenewed: (l: Lease) => void }) {
@@ -62,34 +62,34 @@ function RenewDrawer({ lease, onClose, onRenewed }: { lease: Lease; onClose: () 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative ml-auto w-full max-w-sm bg-white h-full shadow-xl flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} onClick={onClose} />
+      <div className="card" style={{ position: 'relative', marginLeft: 'auto', width: '100%', maxWidth: 420, height: '100%', borderRadius: 0, display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: '1px solid #f0f0f5' }}>
           <div>
-            <h2 className="text-base font-semibold text-gray-900">Renew Lease</h2>
-            <p className="text-xs text-gray-400">{lease.tenant.firstName} {lease.tenant.lastName} · {lease.unit.property.name} {lease.unit.unitNumber}</p>
+            <h2 style={{ fontSize: 16, fontWeight: 700 }}>Renew Lease</h2>
+            <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>{lease.tenant.firstName} {lease.tenant.lastName} · {lease.unit.property.name} {lease.unit.unitNumber}</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          <button style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#9ca3af' }} onClick={onClose}>
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="flex-1 px-6 py-5 space-y-4">
+        <form onSubmit={handleSubmit} style={{ flex: 1, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">New End Date *</label>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>New End Date *</label>
             <input required type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="input" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Monthly Rent *</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
-              <input required type="number" min={0} value={rentAmount} onChange={e => setRentAmount(e.target.value)} className="input pl-6" />
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Monthly Rent *</label>
+            <div style={{ position: 'relative' }}>
+              <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', fontSize: 13 }}>$</span>
+              <input required type="number" min={0} value={rentAmount} onChange={e => setRentAmount(e.target.value)} className="input" style={{ paddingLeft: 24 }} />
             </div>
           </div>
-          {error && <p className="text-xs text-red-600">{error}</p>}
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-secondary text-sm flex-1">Cancel</button>
-            <button type="submit" disabled={saving} className="btn-primary text-sm flex-1 disabled:opacity-50">{saving ? 'Saving…' : 'Renew Lease'}</button>
+          {error && <p style={{ fontSize: 12, color: '#dc2626' }}>{error}</p>}
+          <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
+            <button type="button" onClick={onClose} className="btn-ghost" style={{ flex: 1, justifyContent: 'center' }}>Cancel</button>
+            <button type="submit" disabled={saving} className="btn-primary" style={{ flex: 1, justifyContent: 'center', opacity: saving ? 0.5 : 1 }}>{saving ? 'Saving…' : 'Renew Lease'}</button>
           </div>
         </form>
       </div>
@@ -142,27 +142,27 @@ function NewLeaseDrawer({ onClose, onCreated }: { onClose: () => void; onCreated
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative ml-auto w-full max-w-sm bg-white h-full shadow-xl flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">New Lease</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} onClick={onClose} />
+      <div className="card" style={{ position: 'relative', marginLeft: 'auto', width: '100%', maxWidth: 420, height: '100%', borderRadius: 0, display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: '1px solid #f0f0f5' }}>
+          <h2 style={{ fontSize: 16, fontWeight: 700 }}>New Lease</h2>
+          <button style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#9ca3af' }} onClick={onClose}>
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+        <form onSubmit={handleSubmit} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Tenant *</label>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Tenant *</label>
             <select required value={tenantId} onChange={e => setTenantId(e.target.value)} className="input">
               <option value="">Select tenant…</option>
               {tenants.map(t => <option key={t.id} value={t.id}>{t.firstName} {t.lastName} ({t.email})</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Unit *</label>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Unit *</label>
             {units.length === 0 ? (
-              <p className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">No vacant units available.</p>
+              <p style={{ fontSize: 12, color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '8px 12px' }}>No vacant units available.</p>
             ) : (
               <select required value={unitId} onChange={e => handleUnitChange(e.target.value)} className="input">
                 <option value="">Select unit…</option>
@@ -170,36 +170,38 @@ function NewLeaseDrawer({ onClose, onCreated }: { onClose: () => void; onCreated
               </select>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Start *</label>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Start *</label>
               <input required type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="input" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">End *</label>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>End *</label>
               <input required type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="input" />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Rent / mo *</label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
-                <input required type="number" min={0} value={rentAmount} onChange={e => setRentAmount(e.target.value)} className="input pl-6" />
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Rent / mo *</label>
+              <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', fontSize: 13 }}>$</span>
+                <input required type="number" min={0} value={rentAmount} onChange={e => setRentAmount(e.target.value)} className="input" style={{ paddingLeft: 24 }} />
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Deposit</label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
-                <input type="number" min={0} value={depositPaid} onChange={e => setDepositPaid(e.target.value)} className="input pl-6" />
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Deposit</label>
+              <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', fontSize: 13 }}>$</span>
+                <input type="number" min={0} value={depositPaid} onChange={e => setDepositPaid(e.target.value)} className="input" style={{ paddingLeft: 24 }} />
               </div>
             </div>
           </div>
-          {error && <p className="text-xs text-red-600">{error}</p>}
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-secondary text-sm flex-1">Cancel</button>
-            <button type="submit" disabled={saving || units.length === 0} className="btn-primary text-sm flex-1 disabled:opacity-50">{saving ? 'Saving…' : 'Create Lease'}</button>
+          {error && <p style={{ fontSize: 12, color: '#dc2626' }}>{error}</p>}
+          <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
+            <button type="button" onClick={onClose} className="btn-ghost" style={{ flex: 1, justifyContent: 'center' }}>Cancel</button>
+            <button type="submit" disabled={saving || units.length === 0} className="btn-primary" style={{ flex: 1, justifyContent: 'center', opacity: saving || units.length === 0 ? 0.5 : 1 }}>
+              {saving ? 'Saving…' : 'Create Lease'}
+            </button>
           </div>
         </form>
       </div>
@@ -232,7 +234,12 @@ export default function LeasesPage() {
     }
   }
 
-  const filtered = (leases ?? []).filter(l => {
+  const all = leases ?? []
+  const active = all.filter(l => l.status === 'ACTIVE')
+  const expiringSoon = active.filter(l => daysLeft(l.endDate) <= 60)
+  const expired = all.filter(l => l.status === 'EXPIRED' || l.status === 'TERMINATED')
+
+  const filtered = all.filter(l => {
     const days = daysLeft(l.endDate)
     if (filter === 'ACTIVE') return l.status === 'ACTIVE' && days > 60
     if (filter === 'EXPIRING') return l.status === 'ACTIVE' && days <= 60
@@ -240,106 +247,96 @@ export default function LeasesPage() {
     return true
   })
 
-  const expiringSoon = (leases ?? []).filter(l => l.status === 'ACTIVE' && daysLeft(l.endDate) <= 60)
-  const active = (leases ?? []).filter(l => l.status === 'ACTIVE')
-  const expired = (leases ?? []).filter(l => l.status === 'EXPIRED' || l.status === 'TERMINATED')
-
   const tabs: { key: Filter; label: string; count: number }[] = [
-    { key: 'ALL', label: 'All', count: (leases ?? []).length },
+    { key: 'ALL', label: 'All', count: all.length },
     { key: 'ACTIVE', label: 'Active', count: active.filter(l => daysLeft(l.endDate) > 60).length },
     { key: 'EXPIRING', label: 'Expiring Soon', count: expiringSoon.length },
     { key: 'EXPIRED', label: 'Expired', count: expired.length },
   ]
 
   return (
-    <div className="p-7">
-      <div className="flex items-center justify-between mb-6">
+    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '36px 40px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Leases</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 style={{ fontSize: 22, fontWeight: 800 }}>Leases</h1>
+          <p style={{ fontSize: 13, color: '#6b7280', marginTop: 4 }}>
             {leases === null ? 'Loading…' : `${active.length} active · ${expiringSoon.length} expiring within 60 days`}
           </p>
         </div>
         <button className="btn-primary" onClick={() => setShowNew(true)}>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
           New Lease
         </button>
       </div>
 
-      {/* Expiring soon alert */}
+      {/* Expiring alert */}
       {expiringSoon.length > 0 && (
-        <div className="mb-5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center gap-3">
-          <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-          </svg>
-          <p className="text-xs text-amber-800">
-            <span className="font-semibold">{expiringSoon.length} lease{expiringSoon.length !== 1 ? 's' : ''}</span> expiring within 60 days — consider reaching out about renewals.
+        <div style={{ marginBottom: 20, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <svg width="15" height="15" fill="none" stroke="#f59e0b" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
+          <p style={{ fontSize: 12, color: '#92400e' }}>
+            <strong>{expiringSoon.length} lease{expiringSoon.length !== 1 ? 's' : ''}</strong> expiring within 60 days — consider reaching out about renewals.
           </p>
-          <button onClick={() => setFilter('EXPIRING')} className="ml-auto text-xs font-medium text-amber-700 hover:text-amber-900 shrink-0">View →</button>
+          <button onClick={() => setFilter('EXPIRING')} style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 600, color: '#b45309', background: 'transparent', border: 'none', cursor: 'pointer' }}>
+            View →
+          </button>
         </div>
       )}
 
       {/* Filter tabs */}
-      <div className="flex gap-1 mb-4 bg-gray-100 rounded-xl p-1 w-fit">
+      <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
         {tabs.map(t => (
-          <button
-            key={t.key}
-            onClick={() => setFilter(t.key)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${filter === t.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-          >
-            {t.label}
-            {t.count > 0 && <span className={`ml-1.5 text-[10px] ${filter === t.key ? 'text-gray-400' : 'text-gray-400'}`}>{t.count}</span>}
+          <button key={t.key} onClick={() => setFilter(t.key)} style={{
+            padding: '6px 16px', borderRadius: 20, border: '1.5px solid', fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
+            background: filter === t.key ? '#4f46e5' : 'transparent',
+            borderColor: filter === t.key ? '#4f46e5' : '#e6e6ef',
+            color: filter === t.key ? '#fff' : '#6b7280',
+          }}>
+            {t.label}{t.count > 0 && <span style={{ opacity: 0.7 }}> ({t.count})</span>}
           </button>
         ))}
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="card" style={{ overflow: 'hidden' }}>
         {leases === null ? (
-          <div className="p-10 text-center text-sm text-gray-400">Loading…</div>
+          <div style={{ padding: 40, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>Loading…</div>
         ) : filtered.length === 0 ? (
-          <div className="p-10 text-center text-sm text-gray-400">
+          <div style={{ padding: 40, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>
             {filter === 'ALL' ? 'No leases yet.' : `No ${filter.toLowerCase()} leases.`}
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr className="bg-gray-50/50 border-b border-gray-100">
-                <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">Tenant</th>
-                <th className="text-left text-xs font-medium text-gray-400 px-3 py-3">Unit</th>
-                <th className="text-right text-xs font-medium text-gray-400 px-3 py-3">Rent</th>
-                <th className="text-left text-xs font-medium text-gray-400 px-3 py-3">Start</th>
-                <th className="text-left text-xs font-medium text-gray-400 px-3 py-3">End</th>
-                <th className="text-left text-xs font-medium text-gray-400 px-3 py-3">Status</th>
-                <th className="text-right text-xs font-medium text-gray-400 px-5 py-3"></th>
+              <tr style={{ background: '#fafafa', borderBottom: '1px solid #f0f0f5' }}>
+                {['Tenant', 'Property', 'Unit', 'Monthly Rent', 'Lease End', 'Days Left', ''].map(h => (
+                  <th key={h} className="th">{h}</th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody>
               {filtered.map(lease => {
                 const days = daysLeft(lease.endDate)
                 return (
-                  <tr key={lease.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-5 py-3.5">
-                      <div className="text-xs font-medium text-gray-900">{lease.tenant.firstName} {lease.tenant.lastName}</div>
-                      <div className="text-[10px] text-gray-400">{lease.tenant.email}</div>
-                    </td>
-                    <td className="px-3 py-3.5 text-xs text-gray-500">{lease.unit.property.name} · {lease.unit.unitNumber}</td>
-                    <td className="px-3 py-3.5 text-xs font-medium text-gray-900 text-right">${lease.rentAmount.toLocaleString()}</td>
-                    <td className="px-3 py-3.5 text-xs text-gray-500">{fmt(lease.startDate)}</td>
-                    <td className="px-3 py-3.5 text-xs text-gray-500">
-                      <div className="flex items-center gap-2">
-                        {fmt(lease.endDate)}
-                        {lease.status === 'ACTIVE' && <ExpiryBadge days={days} />}
+                  <tr key={lease.id} className="row-hover" style={{ borderBottom: '1px solid #f4f4f8' }}>
+                    <td style={{ padding: '14px 16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                        <Avatar name={`${lease.tenant.firstName} ${lease.tenant.lastName}`} size={30} />
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 600 }}>{lease.tenant.firstName} {lease.tenant.lastName}</div>
+                          <div style={{ fontSize: 11, color: '#9ca3af' }}>{lease.tenant.email}</div>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-3 py-3.5"><StatusPill status={lease.status} /></td>
-                    <td className="px-5 py-3.5 text-right">
-                      <div className="flex items-center justify-end gap-3">
+                    <td style={{ padding: '14px 16px', fontSize: 12, color: '#6b7280' }}>{lease.unit.property.name}</td>
+                    <td style={{ padding: '14px 16px', fontSize: 13, fontWeight: 600 }}>Unit {lease.unit.unitNumber}</td>
+                    <td style={{ padding: '14px 16px', fontSize: 13, fontWeight: 700 }}>${lease.rentAmount.toLocaleString()}</td>
+                    <td style={{ padding: '14px 16px', fontSize: 12, color: '#374151' }}>{fmt(lease.endDate)}</td>
+                    <td style={{ padding: '14px 16px' }}><DaysLeftBadge days={days} /></td>
+                    <td style={{ padding: '14px 16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         {lease.status === 'ACTIVE' && (
                           <>
-                            <button onClick={() => setRenewing(lease)} className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">Renew</button>
-                            <button onClick={() => setEnding(lease)} className="text-xs text-red-500 hover:text-red-700">End</button>
+                            <button onClick={() => setRenewing(lease)} style={{ fontSize: 12, color: '#4f46e5', fontWeight: 600, background: 'transparent', border: 'none', cursor: 'pointer' }}>Renew</button>
+                            <button onClick={() => setEnding(lease)} style={{ fontSize: 12, color: '#ef4444', fontWeight: 600, background: 'transparent', border: 'none', cursor: 'pointer' }}>End</button>
                           </>
                         )}
                       </div>
@@ -354,16 +351,16 @@ export default function LeasesPage() {
 
       {/* End lease confirm */}
       {ending && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/30" onClick={() => setEnding(null)} />
-          <div className="relative bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
-            <h3 className="text-sm font-semibold text-gray-900 mb-2">End this lease?</h3>
-            <p className="text-xs text-gray-500 mb-5">
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} onClick={() => setEnding(null)} />
+          <div className="card" style={{ position: 'relative', width: '100%', maxWidth: 400, margin: '0 16px', padding: '28px 32px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>End this lease?</h3>
+            <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 24 }}>
               This will mark the lease for <strong>{ending.tenant.firstName} {ending.tenant.lastName}</strong> as expired and set Unit {ending.unit.unitNumber} back to vacant.
             </p>
-            <div className="flex gap-3">
-              <button onClick={() => setEnding(null)} className="btn-secondary text-sm flex-1">Cancel</button>
-              <button onClick={handleEndLease} disabled={endingInProgress} className="flex-1 py-2 px-4 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50">
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setEnding(null)} className="btn-ghost" style={{ flex: 1, justifyContent: 'center' }}>Cancel</button>
+              <button onClick={handleEndLease} disabled={endingInProgress} style={{ flex: 1, padding: '8px 16px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: endingInProgress ? 0.5 : 1 }}>
                 {endingInProgress ? 'Ending…' : 'End Lease'}
               </button>
             </div>

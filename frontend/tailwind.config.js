@@ -4,6 +4,11 @@ export default {
   theme: {
     extend: {
       colors: {
+        ink: '#0d0f18',
+        canvas: '#f4f4f8',
+        edge: '#e6e6ef',
+        muted: '#9ca3af',
+        subtle: '#6b7280',
         indigo: {
           50: '#EEF2FF',
           100: '#E0E7FF',
@@ -18,7 +23,7 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
       },
       borderWidth: {
         '0.5': '0.5px',

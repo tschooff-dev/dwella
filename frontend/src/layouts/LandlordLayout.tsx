@@ -3,9 +3,9 @@ import Sidebar from '../components/landlord/Sidebar'
 
 export default function LandlordLayout() {
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#f4f4f8' }}>
       <Sidebar />
-      <main className="flex-1 min-w-0 overflow-y-auto">
+      <main style={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>
         <Outlet />
       </main>
     </div>
