@@ -9,10 +9,37 @@ import TenantsPage from './pages/landlord/TenantsPage'
 import LeasesPage from './pages/landlord/LeasesPage'
 import PaymentsPage from './pages/landlord/PaymentsPage'
 import ScreeningPage from './pages/landlord/ScreeningPage'
+import MessagesPage from './pages/landlord/MessagesPage'
 import PortalPage from './pages/tenant/PortalPage'
 import ApplyPage from './pages/tenant/ApplyPage'
+import InvitePage from './pages/InvitePage'
 import OnboardingPage from './pages/OnboardingPage'
 import { useApi } from './lib/api'
+
+function RoleRedirect() {
+  const { isSignedIn, isLoaded } = useAuth()
+  const { apiFetch } = useApi()
+  const [role, setRole] = useState<string | null>(null)
+  const [checked, setChecked] = useState(false)
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return
+    apiFetch('/api/users/me')
+      .then(r => r.json())
+      .then(u => {
+        setRole(u?.role ?? null)
+        setChecked(true)
+      })
+      .catch(() => setChecked(true))
+  }, [isLoaded, isSignedIn])
+
+  if (!isLoaded) return null
+  if (!isSignedIn) return <Navigate to="/sign-in" replace />
+  if (!checked) return null
+  if (!role) return <Navigate to="/onboarding" replace />
+  if (role === 'TENANT') return <Navigate to="/tenant/portal" replace />
+  return <Navigate to="/landlord/dashboard" replace />
+}
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isSignedIn, isLoaded } = useAuth()
@@ -42,16 +69,16 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/landlord/dashboard" replace />} />
+        <Route path="/" element={<RoleRedirect />} />
 
         {/* Auth pages */}
         <Route
           path="/sign-in/*"
-          element={<div className="min-h-screen flex items-center justify-center bg-gray-50"><SignIn routing="path" path="/sign-in" /></div>}
+          element={<div className="min-h-screen flex items-center justify-center bg-gray-50"><SignIn routing="path" path="/sign-in" afterSignInUrl="/" /></div>}
         />
         <Route
           path="/sign-up/*"
-          element={<div className="min-h-screen flex items-center justify-center bg-gray-50"><SignUp routing="path" path="/sign-up" /></div>}
+          element={<div className="min-h-screen flex items-center justify-center bg-gray-50"><SignUp routing="path" path="/sign-up" afterSignUpUrl="/" /></div>}
         />
 
         {/* Onboarding */}
@@ -66,6 +93,7 @@ export default function App() {
           <Route path="leases" element={<LeasesPage />} />
           <Route path="payments" element={<PaymentsPage />} />
           <Route path="screening" element={<ScreeningPage />} />
+          <Route path="messages" element={<MessagesPage />} />
         </Route>
 
         {/* Tenant routes */}
@@ -74,9 +102,10 @@ export default function App() {
           <Route path="portal" element={<PortalPage />} />
         </Route>
 
-        {/* Public application form */}
+        {/* Public pages */}
         <Route path="/apply/:unitId" element={<ApplyPage />} />
         <Route path="/apply" element={<ApplyPage />} />
+        <Route path="/invite/:token" element={<InvitePage />} />
       </Routes>
     </BrowserRouter>
   )

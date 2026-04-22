@@ -12,6 +12,9 @@ import { identityRouter } from './routes/identity'
 import { documentsRouter } from './routes/documents'
 import { webhooksRouter } from './routes/webhooks'
 import { usersRouter } from './routes/users'
+import { tenantRouter } from './routes/tenant'
+import { messagesRouter } from './routes/messages'
+import { invitesRouter } from './routes/invites'
 
 const app = express()
 const PORT = process.env.PORT ?? 3001
@@ -60,10 +63,17 @@ app.use('/api/applications', applicationsRouter)
 app.use('/api/leases', leasesRouter)
 app.use('/api/users', usersRouter)
 
+// Tenant & messaging routes
+app.use('/api/tenant', tenantRouter)
+app.use('/api/messages', messagesRouter)
+
 // Verification & document routes
 app.use('/api/plaid', plaidRouter)
 app.use('/api/identity', identityRouter)
 app.use('/api/documents', documentsRouter)
+
+// Tenant invites (public GET, auth POST)
+app.use('/api/invites', invitesRouter)
 
 // Remaining webhooks (Clerk, etc.) — JSON body
 app.use('/api/webhooks', webhooksRouter)

@@ -286,11 +286,74 @@ function TenantDetailPanel({ tenant, onClose }: { tenant: Tenant; onClose: () =>
   )
 }
 
+function InviteModal({ tenant, onClose }: { tenant: Tenant; onClose: () => void }) {
+  const { apiFetch } = useApi()
+  const [link, setLink] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [copied, setCopied] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    apiFetch('/api/invites', { method: 'POST', body: JSON.stringify({ tenantId: tenant.id }) })
+      .then(async r => {
+        if (!r.ok) { setError((await r.json()).error ?? 'Failed'); return }
+        const { token } = await r.json()
+        const base = window.location.origin
+        setLink(`${base}/invite/${token}`)
+      })
+      .catch(() => setError('Failed to generate link'))
+      .finally(() => setLoading(false))
+  }, [])
+
+  function handleCopy() {
+    navigator.clipboard.writeText(link).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) })
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h2 className="text-base font-semibold text-gray-900">Invite {tenant.firstName}</h2>
+            <p className="text-xs text-gray-500 mt-0.5">Share this link so they can create their Dwella account</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 mt-0.5">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="text-center py-6 text-sm text-gray-400">Generating link…</div>
+        ) : error ? (
+          <div className="text-sm text-red-600 text-center py-4">{error}</div>
+        ) : (
+          <>
+            <div className="bg-gray-50 rounded-xl px-3 py-2.5 flex items-center gap-2 border border-gray-100">
+              <span className="flex-1 text-xs text-gray-700 truncate">{link}</span>
+              <button
+                onClick={handleCopy}
+                className="shrink-0 text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+              >
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
+            </div>
+            <p className="text-[10px] text-gray-400 mt-2 text-center">Link expires in 7 days · for {tenant.email}</p>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function TenantsPage() {
   const [tenants, setTenants] = useState<Tenant[] | null>(null)
   const [search, setSearch] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [viewing, setViewing] = useState<Tenant | null>(null)
+  const [inviting, setInviting] = useState<Tenant | null>(null)
   const { apiFetch } = useApi()
 
   useEffect(() => {
@@ -398,12 +461,21 @@ export default function TenantsPage() {
                       {pmtStatus ? <StatusPill status={pmtStatus as any} /> : <span className="text-xs text-gray-300">—</span>}
                     </td>
                     <td className="px-5 py-3.5 text-right">
-                      <button
-                        onClick={() => handleViewTenant(tenant)}
-                        className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
-                      >
-                        View
-                      </button>
+                      <div className="flex items-center justify-end gap-3">
+                        <button
+                          onClick={() => setInviting(tenant)}
+                          className="text-xs text-gray-400 hover:text-gray-600 font-medium"
+                          title="Send portal invite"
+                        >
+                          Invite
+                        </button>
+                        <button
+                          onClick={() => handleViewTenant(tenant)}
+                          className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+                        >
+                          View
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 )
@@ -415,6 +487,7 @@ export default function TenantsPage() {
 
       {showAdd && <AddTenantDrawer onClose={() => setShowAdd(false)} onCreated={handleTenantAdded} />}
       {viewing && <TenantDetailPanel tenant={viewing} onClose={() => setViewing(null)} />}
+      {inviting && <InviteModal tenant={inviting} onClose={() => setInviting(null)} />}
     </div>
   )
 }

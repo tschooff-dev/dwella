@@ -84,6 +84,17 @@ webhooksRouter.post(
           break
         }
 
+        case 'checkout.session.completed': {
+          const session = event.data.object as any
+          const paymentId = session.metadata?.paymentId
+          if (!paymentId) break
+          await prisma.payment.update({
+            where: { id: paymentId },
+            data: { status: 'PAID', paidDate: new Date(), stripePaymentId: session.payment_intent ?? session.id },
+          })
+          break
+        }
+
         case 'payment_intent.succeeded': {
           const paymentIntent = event.data.object as any
           const paymentId = paymentIntent.metadata?.paymentId
@@ -153,21 +164,34 @@ webhooksRouter.post('/clerk', async (req: Request, res: Response) => {
 
       if (!email) return res.status(400).json({ error: 'No email' })
 
-      await prisma.user.upsert({
-        where: { clerkId: id },
-        update: {
-          email,
-          firstName: first_name ?? '',
-          lastName: last_name ?? '',
-        },
-        create: {
-          clerkId: id,
-          email,
-          firstName: first_name ?? '',
-          lastName: last_name ?? '',
-          role: (public_metadata?.role as any) ?? 'TENANT',
-        },
-      })
+      // If a landlord pre-created this user (no clerkId yet), link the real account
+      const existingByEmail = await prisma.user.findUnique({ where: { email } })
+      if (existingByEmail && !existingByEmail.clerkId) {
+        await prisma.user.update({
+          where: { email },
+          data: {
+            clerkId: id,
+            firstName: first_name ?? existingByEmail.firstName,
+            lastName: last_name ?? existingByEmail.lastName,
+          },
+        })
+      } else {
+        await prisma.user.upsert({
+          where: { clerkId: id },
+          update: {
+            email,
+            firstName: first_name ?? '',
+            lastName: last_name ?? '',
+          },
+          create: {
+            clerkId: id,
+            email,
+            firstName: first_name ?? '',
+            lastName: last_name ?? '',
+            role: (public_metadata?.role as any) ?? 'TENANT',
+          },
+        })
+      }
     }
 
     res.json({ received: true })

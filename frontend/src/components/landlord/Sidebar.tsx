@@ -1,5 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useUser, useClerk } from '@clerk/clerk-react'
+import { useEffect, useState } from 'react'
+import { useApi } from '../../lib/api'
 
 const navItems = [
   {
@@ -56,12 +58,30 @@ const navItems = [
       </svg>
     ),
   },
+  {
+    label: 'Messages',
+    to: '/landlord/messages',
+    icon: (
+      <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+      </svg>
+    ),
+  },
 ]
 
 export default function Sidebar() {
   const navigate = useNavigate()
   const { user } = useUser()
   const { signOut } = useClerk()
+  const { apiFetch } = useApi()
+  const [unread, setUnread] = useState(0)
+
+  useEffect(() => {
+    const fetch = () => apiFetch('/api/messages/meta/unread-total').then(r => r.json()).then(d => setUnread(d.count ?? 0)).catch(() => {})
+    fetch()
+    const interval = setInterval(fetch, 15000)
+    return () => clearInterval(interval)
+  }, [])
 
   const displayName = user ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || user.primaryEmailAddress?.emailAddress : ''
   const email = user?.primaryEmailAddress?.emailAddress ?? ''
@@ -105,6 +125,11 @@ export default function Sidebar() {
               {item.icon}
               {item.label}
             </div>
+            {item.label === 'Messages' && unread > 0 && (
+              <span className="w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center shrink-0">
+                {unread > 9 ? '9+' : unread}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>
