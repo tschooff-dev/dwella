@@ -1,6 +1,7 @@
 import { Router, Response } from 'express'
 import { prisma } from '../lib/prisma'
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth'
+import { sendTenantInvite } from '../lib/email'
 
 export const tenantsRouter = Router()
 
@@ -129,7 +130,42 @@ tenantsRouter.post('/', requireAuth, async (req, res: Response) => {
     // Mark unit as occupied
     await prisma.unit.update({ where: { id: unitId }, data: { status: 'OCCUPIED' } })
 
-    res.status(201).json({ tenant, lease })
+    // Auto-generate invite token
+    const expiresAt = new Date()
+    expiresAt.setDate(expiresAt.getDate() + 7)
+    const invite = await prisma.tenantInvite.create({
+      data: { email: tenant.email, leaseId: lease.id, landlordId: landlord.id, expiresAt },
+    })
+
+    // Send invite email (fire-and-forget — don't fail the request if email fails)
+    const landlordUser = await prisma.user.findUnique({ where: { id: landlord.id }, select: { firstName: true, lastName: true } })
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173'
+    sendTenantInvite({
+      toEmail: tenant.email,
+      toName: `${tenant.firstName} ${tenant.lastName}`.trim(),
+      landlordName: landlordUser ? `${landlordUser.firstName} ${landlordUser.lastName}`.trim() : 'Your landlord',
+      propertyName: lease.unit.property.name,
+      unitNumber: lease.unit.unitNumber,
+      rentAmount: lease.rentAmount,
+      inviteUrl: `${frontendUrl}/invite/${invite.token}`,
+    }).catch(err => console.error('Failed to send invite email:', err))
+
+    // Return tenant with leases so the frontend can render it immediately
+    const tenantWithLeases = await prisma.user.findUnique({
+      where: { id: tenant.id },
+      include: {
+        leases: {
+          where: { unit: { property: { landlordId: landlord.id } } },
+          include: {
+            unit: { include: { property: { select: { id: true, name: true } } } },
+            payments: { orderBy: { dueDate: 'desc' }, take: 1 },
+          },
+          orderBy: { startDate: 'desc' },
+        },
+      },
+    })
+
+    res.status(201).json({ tenant: tenantWithLeases, lease })
   } catch (err: any) {
     if (err.code === 'P2002') return res.status(409).json({ error: 'A tenant with that email already has a lease' })
     res.status(500).json({ error: 'Failed to create tenant' })

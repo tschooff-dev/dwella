@@ -1,6 +1,7 @@
 import { Router, Response } from 'express'
 import { prisma } from '../lib/prisma'
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth'
+import { sendTenantInvite } from '../lib/email'
 
 export const invitesRouter = Router()
 
@@ -47,7 +48,31 @@ invitesRouter.post('/', requireAuth, async (req, res: Response) => {
       },
     })
 
-    res.json({ token: invite.token, email: tenant.email })
+    // Send email (fire-and-forget)
+    const landlordUser = await prisma.user.findUnique({ where: { id: landlord.id }, select: { firstName: true, lastName: true } })
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173'
+    const inviteUrl = `${frontendUrl}/invite/${invite.token}`
+
+    if (invite.leaseId) {
+      const lease = await prisma.lease.findUnique({
+        where: { id: invite.leaseId },
+        include: { unit: { include: { property: { select: { name: true } } } } },
+      })
+      const tenantUser = await prisma.user.findUnique({ where: { id: tenant.id }, select: { firstName: true, lastName: true } })
+      if (lease && tenantUser) {
+        sendTenantInvite({
+          toEmail: tenant.email,
+          toName: `${tenantUser.firstName} ${tenantUser.lastName}`.trim(),
+          landlordName: landlordUser ? `${landlordUser.firstName} ${landlordUser.lastName}`.trim() : 'Your landlord',
+          propertyName: lease.unit.property.name,
+          unitNumber: lease.unit.unitNumber,
+          rentAmount: lease.rentAmount,
+          inviteUrl,
+        }).catch(err => console.error('Failed to send invite email:', err))
+      }
+    }
+
+    res.json({ token: invite.token, email: tenant.email, inviteUrl })
   } catch (err) {
     res.status(500).json({ error: 'Failed to create invite' })
   }
