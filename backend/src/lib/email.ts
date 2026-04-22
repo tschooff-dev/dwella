@@ -25,7 +25,7 @@ export async function sendTenantInvite({
   }
 
   await resend.emails.send({
-    from: 'Dwella <noreply@dwellaapp.com>',
+    from: 'Dwella <onboarding@resend.dev>',
     to: toEmail,
     subject: `You've been invited to your Dwella resident portal`,
     html: `
