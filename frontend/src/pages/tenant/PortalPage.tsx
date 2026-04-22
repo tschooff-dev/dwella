@@ -116,10 +116,16 @@ function InitialsAvatar({ name, size = 36, color }: { name: string; size?: numbe
   )
 }
 
-function feeInfo(pm: SavedPaymentMethod) {
-  if (pm.type === 'us_bank_account') return { text: 'Free', rate: 0 }
+function feeInfo(pm: SavedPaymentMethod): { text: string; flatFee?: number; rate?: number } {
+  if (pm.type === 'us_bank_account') return { text: '$5.00 flat fee', flatFee: 5 }
   if (pm.funding === 'debit') return { text: '1.5% fee', rate: 0.015 }
   return { text: '3.0% fee', rate: 0.03 }
+}
+
+function calcFee(pm: SavedPaymentMethod, amount: number): number {
+  const info = feeInfo(pm)
+  if (info.flatFee !== undefined) return info.flatFee
+  return Math.round(amount * (info.rate ?? 0) * 100) / 100
 }
 
 // ─── Add Payment Method ───────────────────────────────────────────────────────
@@ -190,7 +196,7 @@ function AddPaymentMethodModal({ onClose, onAdded }: { onClose: () => void; onAd
           </button>
         </div>
         <div style={{ fontSize: 12, color: '#6b7280', background: '#f4f4f8', borderRadius: 8, padding: '10px 14px', marginBottom: 20 }}>
-          <strong style={{ color: '#0d0f18' }}>Fees:</strong>&nbsp; ACH bank transfer — Free &nbsp;·&nbsp; Debit card — 1.5% &nbsp;·&nbsp; Credit card — 3.0%
+          <strong style={{ color: '#0d0f18' }}>Fees:</strong>&nbsp; ACH bank transfer — $5.00 flat &nbsp;·&nbsp; Debit card — 1.5% &nbsp;·&nbsp; Credit card — 3.0%
         </div>
         {initError && <p style={{ color: '#dc2626', fontSize: 13 }}>{initError}</p>}
         {!clientSecret && !initError && <div style={{ textAlign: 'center', padding: '32px 0', color: '#9ca3af', fontSize: 13 }}>Loading…</div>}
@@ -213,9 +219,9 @@ function PayWithSavedModal({ payment, methods, onClose, onPaid }: { payment: Pay
   const [error, setError] = useState('')
 
   const pm = methods.find(m => m.id === selected)
-  const { rate } = pm ? { rate: feeInfo(pm).rate } : { rate: 0 }
-  const fee = Math.round(payment.amount * rate * 100) / 100
+  const fee = pm ? calcFee(pm, payment.amount) : 0
   const total = payment.amount + fee
+  const feeRate = pm ? (feeInfo(pm).rate ?? 0) : 0
 
   async function handlePay() {
     setPaying(true)
@@ -271,7 +277,8 @@ function PayWithSavedModal({ payment, methods, onClose, onPaid }: { payment: Pay
           </div>
           {fee > 0 && (
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#6b7280', marginBottom: 4 }}>
-              <span>Convenience fee ({(rate * 100).toFixed(1)}%)</span><span>${fee.toFixed(2)}</span>
+              <span>{feeRate > 0 ? `Convenience fee (${(feeRate * 100).toFixed(1)}%)` : 'ACH processing fee'}</span>
+              <span>${fee.toFixed(2)}</span>
             </div>
           )}
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15, fontWeight: 700, color: '#0d0f18', borderTop: '1px solid #e6e6ef', paddingTop: 8, marginTop: 8 }}>
@@ -308,7 +315,7 @@ function PaymentMethodsSection({ methods, loading, onAdd, onRemove }: { methods:
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
           <p style={{ fontSize: 13, fontWeight: 700, color: '#0d0f18', margin: 0 }}>Payment Methods</p>
-          <p style={{ fontSize: 11, color: '#9ca3af', margin: '3px 0 0' }}>ACH — Free · Debit — 1.5% · Credit — 3.0%</p>
+          <p style={{ fontSize: 11, color: '#9ca3af', margin: '3px 0 0' }}>ACH — $5.00 flat · Debit — 1.5% · Credit — 3.0%</p>
         </div>
         <button onClick={onAdd} className="btn-ghost" style={{ fontSize: 12, padding: '7px 14px' }}>
           <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>

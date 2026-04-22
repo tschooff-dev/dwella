@@ -383,7 +383,7 @@ tenantRouter.post('/payments/:id/pay-saved', requireAuth, async (req, res: Respo
     let methodLabel = 'Payment'
 
     if (pm.type === 'us_bank_account') {
-      feeAmountCents = 0
+      feeAmountCents = 500 // $5 flat ACH fee
       methodLabel = `ACH · ${pm.us_bank_account?.bank_name ?? 'Bank'} ···${pm.us_bank_account?.last4}`
     } else if (pm.type === 'card') {
       const funding = pm.card?.funding
