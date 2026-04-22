@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { useApi } from '../lib/api'
@@ -8,125 +8,144 @@ export default function OnboardingPage() {
   const navigate = useNavigate()
   const { apiFetch } = useApi()
 
+  const [existingRole, setExistingRole] = useState<string | null>(null)
   const [role, setRole] = useState<'LANDLORD' | 'TENANT' | null>(null)
   const [firstName, setFirstName] = useState(user?.firstName ?? '')
   const [lastName, setLastName] = useState(user?.lastName ?? '')
   const [phone, setPhone] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    apiFetch('/api/users/me')
+      .then(r => r.json())
+      .then(u => {
+        if (u?.role) {
+          setExistingRole(u.role)
+          setRole(u.role)
+        }
+        if (u?.phone) setPhone(u.phone)
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!role) return
-    setLoading(true)
+    if (!role || !firstName.trim() || !lastName.trim()) return
+    setSaving(true)
     setError('')
     try {
+      // Update Clerk profile
+      await user?.update({ firstName: firstName.trim(), lastName: lastName.trim() })
+
+      // Update DB
       const res = await apiFetch('/api/users/setup', {
         method: 'POST',
         body: JSON.stringify({
-          firstName,
-          lastName,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
           phone,
           role,
           email: user?.primaryEmailAddress?.emailAddress ?? '',
         }),
       })
       if (!res.ok) throw new Error('Setup failed')
+
       navigate(role === 'LANDLORD' ? '/landlord/dashboard' : '/tenant/portal', { replace: true })
     } catch {
       setError('Something went wrong. Please try again.')
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
   }
 
+  if (loading) return null
+
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full max-w-md p-8">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+    <div style={{ minHeight: '100vh', background: '#f4f4f8', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div className="card" style={{ width: '100%', maxWidth: 440, padding: 36 }}>
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24">
+              <path fillRule="evenodd" d="M3 21 L3 11 A9 9 0 0 1 21 11 L21 21 Z M9.5 21 L9.5 15.5 Q9.5 14 12 14 Q14.5 14 14.5 15.5 L14.5 21 Z" fill="white" />
             </svg>
           </div>
           <div>
-            <div className="text-lg font-bold text-gray-900">Welcome to Dwella</div>
-            <div className="text-xs text-gray-400">Let's set up your account</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#0d0f18', lineHeight: 1.1 }}>Dwella</div>
+            <div style={{ fontSize: 11, color: '#9ca3af' }}>
+              {existingRole ? 'Complete your profile' : 'Set up your account'}
+            </div>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Role */}
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-2">I am a…</label>
-            <div className="grid grid-cols-2 gap-3">
-              {(['LANDLORD', 'TENANT'] as const).map(r => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => setRole(r)}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${
-                    role === r
-                      ? 'border-indigo-600 bg-indigo-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="text-lg mb-1">{r === 'LANDLORD' ? '🏠' : '🔑'}</div>
-                  <div className="text-sm font-semibold text-gray-900">
-                    {r === 'LANDLORD' ? 'Landlord' : 'Tenant'}
-                  </div>
-                  <div className="text-[11px] text-gray-400 mt-0.5">
-                    {r === 'LANDLORD' ? 'I manage properties' : 'I rent a property'}
-                  </div>
-                </button>
-              ))}
+        <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0d0f18', marginBottom: 6 }}>
+          {existingRole ? 'What should we call you?' : 'Welcome to Dwella'}
+        </h2>
+        <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 24 }}>
+          {existingRole
+            ? 'Add your name so landlords and teammates know who you are.'
+            : "Let's get your account set up in under a minute."}
+        </p>
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          {/* Role picker — only for new users */}
+          {!existingRole && (
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 8 }}>I am a…</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                {(['LANDLORD', 'TENANT'] as const).map(r => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setRole(r)}
+                    style={{
+                      padding: '14px 12px', borderRadius: 10, textAlign: 'left', cursor: 'pointer',
+                      border: `2px solid ${role === r ? '#4f46e5' : '#e6e6ef'}`,
+                      background: role === r ? '#eef2ff' : '#fff',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    <div style={{ fontSize: 20, marginBottom: 4 }}>{r === 'LANDLORD' ? '🏠' : '🔑'}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#0d0f18' }}>{r === 'LANDLORD' ? 'Landlord' : 'Tenant'}</div>
+                    <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{r === 'LANDLORD' ? 'I manage properties' : 'I rent a property'}</div>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Name */}
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">First name</label>
-              <input
-                type="text"
-                required
-                value={firstName}
-                onChange={e => setFirstName(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>First name *</label>
+              <input required value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Jane" className="input" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">Last name</label>
-              <input
-                type="text"
-                required
-                value={lastName}
-                onChange={e => setLastName(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Last name *</label>
+              <input required value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Smith" className="input" />
             </div>
           </div>
 
           {/* Phone */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">Phone <span className="text-gray-400">(optional)</span></label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={e => setPhone(e.target.value)}
-              placeholder="555-000-0000"
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+              Phone <span style={{ color: '#9ca3af', fontWeight: 400 }}>(optional)</span>
+            </label>
+            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="(555) 000-0000" className="input" />
           </div>
 
-          {error && <p className="text-xs text-red-600">{error}</p>}
+          {error && <p style={{ fontSize: 12, color: '#dc2626', margin: 0 }}>{error}</p>}
 
           <button
             type="submit"
-            disabled={!role || !firstName || !lastName || loading}
-            className="w-full py-2.5 px-4 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            disabled={!role || !firstName.trim() || !lastName.trim() || saving}
+            className="btn-primary"
+            style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: 14, opacity: (!role || !firstName.trim() || !lastName.trim() || saving) ? 0.5 : 1 }}
           >
-            {loading ? 'Setting up…' : 'Continue to Dwella'}
+            {saving ? 'Saving…' : 'Continue to Dwella →'}
           </button>
         </form>
       </div>

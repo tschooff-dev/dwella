@@ -27,7 +27,7 @@ function RoleRedirect() {
     apiFetch('/api/users/me')
       .then(r => r.json())
       .then(u => {
-        setRole(u?.role ?? null)
+        setRole(u?.role && u?.firstName ? u.role : null)
         setChecked(true)
       })
       .catch(() => setChecked(true))
@@ -52,7 +52,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     apiFetch('/api/users/me')
       .then(r => r.json())
       .then(user => {
-        setNeedsOnboarding(!user || !user.role)
+        setNeedsOnboarding(!user || !user.role || !user.firstName)
         setChecked(true)
       })
       .catch(() => setChecked(true))
