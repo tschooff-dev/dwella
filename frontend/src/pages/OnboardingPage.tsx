@@ -68,13 +68,11 @@ export default function OnboardingPage() {
       <div className="card" style={{ width: '100%', maxWidth: 440, padding: 36 }}>
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <svg width="22" height="22" viewBox="0 0 24 24">
-              <path fillRule="evenodd" d="M3 21 L3 11 A9 9 0 0 1 21 11 L21 21 Z M9.5 21 L9.5 15.5 Q9.5 14 12 14 Q14.5 14 14.5 15.5 L14.5 21 Z" fill="white" />
-            </svg>
-          </div>
+          <svg width="36" height="36" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+            <path fillRule="evenodd" d="M9 48 L9 24 A17 17 0 0 1 43 24 L43 48 Z M19 48 L19 37 Q19 33 26 33 Q33 33 33 37 L33 48 Z" fill="#4f46e5" />
+          </svg>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#0d0f18', lineHeight: 1.1 }}>Dwella</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#0d0f18', lineHeight: 1.1 }}>Zenant</div>
             <div style={{ fontSize: 11, color: '#9ca3af' }}>
               {existingRole ? 'Complete your profile' : 'Set up your account'}
             </div>

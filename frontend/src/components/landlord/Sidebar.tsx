@@ -108,21 +108,21 @@ export default function Sidebar() {
   return (
     <aside style={SIDEBAR}>
       {/* Logo */}
-      <div style={{ padding: '20px 18px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-          <svg width="38" height="38" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
-            <rect width="52" height="52" rx="13" fill="#4f46e5" />
-            <path fillRule="evenodd" d="M9 48 L9 24 A17 17 0 0 1 43 24 L43 48 Z M19 48 L19 37 Q19 33 26 33 Q33 33 33 37 L33 48 Z" fill="white" />
+      <div style={{ padding: '22px 18px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <svg width="40" height="40" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+            <path fillRule="evenodd" d="M9 48 L9 24 A17 17 0 0 1 43 24 L43 48 Z M19 48 L19 37 Q19 33 26 33 Q33 33 33 37 L33 48 Z" fill="#818cf8" />
           </svg>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>Dwella</div>
-            <div style={{ fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 2 }}>Property Management</div>
+            <div style={{ fontSize: 17, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>Zenant</div>
+            <div style={{ fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 2 }}>Property Management</div>
           </div>
         </div>
       </div>
 
       {/* Nav */}
-      <nav style={{ flex: 1, padding: '12px 10px', overflowY: 'auto' }}>
+      <nav style={{ flex: 1, padding: '16px 10px', overflowY: 'auto' }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 10px', marginBottom: 8 }}>Main</div>
         {NAV.map(item => (
           <NavLink
             key={item.to}
@@ -139,21 +139,22 @@ export default function Sidebar() {
               fontWeight: 600,
               textDecoration: 'none',
               transition: 'background 0.1s',
-              background: isActive ? 'rgba(79,70,229,0.25)' : 'transparent',
-              color: isActive ? '#fff' : 'rgba(255,255,255,0.55)',
+              background: isActive ? 'rgba(129,140,248,0.15)' : 'transparent',
+              color: isActive ? '#fff' : 'rgba(255,255,255,0.5)',
+              borderLeft: isActive ? '3px solid #818cf8' : '3px solid transparent',
             })}
             onMouseEnter={e => {
               const el = e.currentTarget
-              if (!el.classList.contains('active')) {
+              if (!el.style.borderLeft.includes('818cf8')) {
                 el.style.background = 'rgba(255,255,255,0.05)'
-                el.style.color = 'rgba(255,255,255,0.9)'
+                el.style.color = 'rgba(255,255,255,0.85)'
               }
             }}
             onMouseLeave={e => {
               const el = e.currentTarget
-              if (!el.style.background.includes('rgba(79')) {
+              if (!el.style.borderLeft.includes('818cf8')) {
                 el.style.background = 'transparent'
-                el.style.color = 'rgba(255,255,255,0.55)'
+                el.style.color = 'rgba(255,255,255,0.5)'
               }
             }}
           >
