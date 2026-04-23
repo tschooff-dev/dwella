@@ -85,7 +85,7 @@ export default function StripeIdentityButton({ applicationId, onVerified }: Stri
       </button>
       {error && <p className="text-xs text-red-600">{error}</p>}
       <p className="text-[11px] text-gray-400 text-center">
-        Government-issued ID + selfie. Processed securely by Stripe — Dwella never sees your document.
+        Government-issued ID + selfie. Processed securely by Stripe — Zenant never sees your document.
       </p>
     </div>
   )

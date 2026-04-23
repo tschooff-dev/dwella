@@ -71,7 +71,7 @@ export default function InvitePage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
           </div>
-          <span className="text-lg font-bold text-gray-900">Dwella</span>
+          <span className="text-lg font-bold text-gray-900">Zenant</span>
         </div>
 
         {error ? (
@@ -93,7 +93,7 @@ export default function InvitePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-base font-semibold text-gray-900 mb-1">Welcome to Dwella!</h2>
+            <h2 className="text-base font-semibold text-gray-900 mb-1">Welcome to Zenant!</h2>
             <p className="text-sm text-gray-500">Redirecting to your portal…</p>
           </div>
         ) : showSignIn && !isSignedIn ? (
@@ -111,7 +111,7 @@ export default function InvitePage() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="bg-indigo-600 px-6 py-5">
               <p className="text-xs text-indigo-200 font-medium uppercase tracking-wider mb-1">You've been invited</p>
-              <h1 className="text-xl font-bold text-white">Join your Dwella portal</h1>
+              <h1 className="text-xl font-bold text-white">Join your Zenant portal</h1>
               <p className="text-sm text-indigo-200 mt-1">from {invite.landlord}</p>
             </div>
 

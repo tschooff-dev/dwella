@@ -217,7 +217,7 @@ export default function ApplyPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
           </div>
-          <span className="text-sm font-bold text-gray-900">Dwella</span>
+          <span className="text-sm font-bold text-gray-900">Zenant</span>
         </div>
 
         {step !== 'submitted' && unit && (
@@ -311,7 +311,7 @@ export default function ApplyPage() {
           <div className="card p-6 space-y-4">
             <div>
               <h2 className="text-sm font-semibold text-gray-900">Verify Income</h2>
-              <p className="text-xs text-gray-500 mt-1">Connect your payroll or bank account to verify income instantly. No credentials are shared with Dwella.</p>
+              <p className="text-xs text-gray-500 mt-1">Connect your payroll or bank account to verify income instantly. No credentials are shared with Zenant.</p>
             </div>
 
             {incomeVerified && verifiedIncome.amount && (
@@ -351,7 +351,7 @@ export default function ApplyPage() {
             <div>
               <h2 className="text-sm font-semibold text-gray-900">Verify Identity</h2>
               <p className="text-xs text-gray-500 mt-1">
-                Take a photo of your government-issued ID and a selfie. Processed securely by Stripe — Dwella never stores your document images.
+                Take a photo of your government-issued ID and a selfie. Processed securely by Stripe — Zenant never stores your document images.
               </p>
             </div>
 
@@ -544,7 +544,7 @@ export default function ApplyPage() {
         )}
 
         <p className="text-center text-[11px] text-gray-400 mt-4">
-          Powered by Dwella · Your data is encrypted and handled per our privacy policy
+          Powered by Zenant · Your data is encrypted and handled per our privacy policy
         </p>
       </div>
     </div>

@@ -80,7 +80,7 @@ export default function OnboardingPage() {
         </div>
 
         <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0d0f18', marginBottom: 6 }}>
-          {existingRole ? 'What should we call you?' : 'Welcome to Dwella'}
+          {existingRole ? 'What should we call you?' : 'Welcome to Zenant'}
         </h2>
         <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 24 }}>
           {existingRole
@@ -143,7 +143,7 @@ export default function OnboardingPage() {
             className="btn-primary"
             style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: 14, opacity: (!role || !firstName.trim() || !lastName.trim() || saving) ? 0.5 : 1 }}
           >
-            {saving ? 'Saving…' : 'Continue to Dwella →'}
+            {saving ? 'Saving…' : 'Continue to Zenant →'}
           </button>
         </form>
       </div>

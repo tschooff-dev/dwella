@@ -269,7 +269,7 @@ function InviteModal({ tenant, onClose }: { tenant: Tenant; onClose: () => void 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <div>
             <h2 style={{ fontSize: 17, fontWeight: 700 }}>Invite {tenant.firstName}</h2>
-            <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>Share this link to create their Dwella account</p>
+            <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>Share this link to create their Zenant account</p>
           </div>
           <button style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#9ca3af' }} onClick={onClose}>
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>

@@ -98,7 +98,7 @@ export default function PlaidIncomeButton({ applicationId, onVerified }: PlaidIn
       </button>
       {error && <p className="text-xs text-red-600">{error}</p>}
       <p className="text-[11px] text-gray-400 text-center">
-        Securely connect your bank to verify income. Your credentials are never shared with Dwella.
+        Securely connect your bank to verify income. Your credentials are never shared with Zenant.
       </p>
     </div>
   )

@@ -16,6 +16,7 @@ import { usersRouter } from './routes/users'
 import { tenantRouter } from './routes/tenant'
 import { messagesRouter } from './routes/messages'
 import { invitesRouter } from './routes/invites'
+import { maintenanceRouter } from './routes/maintenance'
 
 const app = express()
 const PORT = process.env.PORT ?? 3001
@@ -68,6 +69,7 @@ app.use('/api/users', usersRouter)
 // Tenant & messaging routes
 app.use('/api/tenant', tenantRouter)
 app.use('/api/messages', messagesRouter)
+app.use('/api/maintenance', maintenanceRouter)
 
 // Verification & document routes
 app.use('/api/plaid', plaidRouter)
