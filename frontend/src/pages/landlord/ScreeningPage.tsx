@@ -43,6 +43,7 @@ function ApproveDrawer({ application, onClose, onApproved }: { application: Appl
   const [depositPaid, setDepositPaid] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [sendInvite, setSendInvite] = useState(true)
 
   // Pre-fill rent from unit
   useEffect(() => {
@@ -69,6 +70,7 @@ function ApproveDrawer({ application, onClose, onApproved }: { application: Appl
           endDate,
           rentAmount,
           depositPaid: depositPaid || undefined,
+          sendInvite,
         }),
       })
       if (!res.ok) {
@@ -131,6 +133,20 @@ function ApproveDrawer({ application, onClose, onApproved }: { application: Appl
             </div>
           </div>
           {error && <p className="text-xs text-red-600">{error}</p>}
+
+          <label className="flex items-start gap-3 cursor-pointer bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3">
+            <input
+              type="checkbox"
+              checked={sendInvite}
+              onChange={e => setSendInvite(e.target.checked)}
+              className="mt-0.5 shrink-0 accent-indigo-600"
+            />
+            <div>
+              <div className="text-xs font-semibold text-indigo-900">Invite tenant to portal</div>
+              <div className="text-[11px] text-indigo-500 mt-0.5">Send {application.applicantEmail} an email to set up their Zenant account.</div>
+            </div>
+          </label>
+
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="btn-secondary text-sm flex-1">Cancel</button>
             <button type="submit" disabled={saving} className="btn-primary text-sm flex-1 disabled:opacity-50">{saving ? 'Saving…' : 'Approve & Create Lease'}</button>

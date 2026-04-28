@@ -96,7 +96,7 @@ tenantsRouter.post('/', requireAuth, async (req, res: Response) => {
     })
     if (!landlord) return res.status(401).json({ error: 'Unauthorized' })
 
-    const { firstName, lastName, email, phone, unitId, startDate, endDate, rentAmount, depositPaid } = req.body
+    const { firstName, lastName, email, phone, unitId, startDate, endDate, rentAmount, depositPaid, sendInvite = true } = req.body
 
     // Verify the unit belongs to this landlord
     const unit = await prisma.unit.findFirst({
@@ -140,6 +140,22 @@ tenantsRouter.post('/', requireAuth, async (req, res: Response) => {
     // Send invite email (fire-and-forget — don't fail the request if email fails)
     const landlordUser = await prisma.user.findUnique({ where: { id: landlord.id }, select: { firstName: true, lastName: true } })
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173'
+    if (!sendInvite) {
+      const tenantWithLeases = await prisma.user.findUnique({
+        where: { id: tenant.id },
+        include: {
+          leases: {
+            where: { unit: { property: { landlordId: landlord.id } } },
+            include: {
+              unit: { include: { property: { select: { id: true, name: true } } } },
+              payments: { orderBy: { dueDate: 'desc' }, take: 1 },
+            },
+            orderBy: { startDate: 'desc' },
+          },
+        },
+      })
+      return res.status(201).json({ tenant: tenantWithLeases, lease })
+    }
     sendTenantInvite({
       toEmail: tenant.email,
       toName: `${tenant.firstName} ${tenant.lastName}`.trim(),
