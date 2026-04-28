@@ -78,6 +78,30 @@ applicationsRouter.get('/unit/:unitId', async (req, res) => {
   }
 })
 
+// GET /api/applications/token/:token — public, returns unit info for one-time apply link
+applicationsRouter.get('/token/:token', async (req, res) => {
+  try {
+    const unit = await prisma.unit.findUnique({
+      where: { applyToken: req.params.token },
+      select: {
+        id: true,
+        unitNumber: true,
+        bedrooms: true,
+        bathrooms: true,
+        squareFeet: true,
+        rentAmount: true,
+        depositAmount: true,
+        status: true,
+        property: { select: { id: true, name: true, address: true, city: true, state: true } },
+      },
+    })
+    if (!unit) return res.status(410).json({ error: 'This application link has already been used or is no longer valid.' })
+    res.json(unit)
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch unit' })
+  }
+})
+
 // PATCH /api/applications/:id/applicant-update — public, applicant updates their own application
 applicationsRouter.patch('/:id/applicant-update', async (req, res) => {
   try {
@@ -103,7 +127,19 @@ applicationsRouter.patch('/:id/applicant-update', async (req, res) => {
 // POST /api/applications — public endpoint, no auth (applicants submit their own)
 applicationsRouter.post('/', async (req, res) => {
   try {
-    const { unitId, applicantName, applicantEmail, applicantPhone, monthlyIncome, creditScore } = req.body
+    const { token, unitId: rawUnitId, applicantName, applicantEmail, applicantPhone, monthlyIncome, creditScore } = req.body
+
+    let unitId = rawUnitId
+
+    if (token) {
+      const unit = await prisma.unit.findUnique({ where: { applyToken: token }, select: { id: true } })
+      if (!unit) return res.status(410).json({ error: 'This application link has already been used or is no longer valid.' })
+      unitId = unit.id
+      // Consume the token immediately so no one else can use this link
+      await prisma.unit.update({ where: { id: unit.id }, data: { applyToken: null } })
+    }
+
+    if (!unitId) return res.status(400).json({ error: 'unitId or token is required' })
 
     const aiScore = computeAiScore(monthlyIncome, creditScore)
     const aiSummary = generateAiSummary(applicantName, monthlyIncome, creditScore, aiScore)

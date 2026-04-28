@@ -10,6 +10,7 @@ import LeasesPage from './pages/landlord/LeasesPage'
 import PaymentsPage from './pages/landlord/PaymentsPage'
 import ScreeningPage from './pages/landlord/ScreeningPage'
 import MessagesPage from './pages/landlord/MessagesPage'
+import SettingsPage from './pages/landlord/SettingsPage'
 import PortalPage from './pages/tenant/PortalPage'
 import ApplyPage from './pages/tenant/ApplyPage'
 import InvitePage from './pages/InvitePage'
@@ -94,6 +95,7 @@ export default function App() {
           <Route path="payments" element={<PaymentsPage />} />
           <Route path="screening" element={<ScreeningPage />} />
           <Route path="messages" element={<MessagesPage />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
 
         {/* Tenant routes */}

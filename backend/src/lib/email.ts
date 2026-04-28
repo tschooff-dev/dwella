@@ -20,14 +20,14 @@ export async function sendTenantInvite({
   inviteUrl: string
 }) {
   if (!process.env.RESEND_API_KEY) {
-    console.warn('RESEND_API_KEY not set — skipping invite email')
+    console.warn('RESEND_API_KEY not set — skipping Zenant invite email')
     return
   }
 
   await resend.emails.send({
-    from: 'Dwella <onboarding@resend.dev>',
+    from: 'Zenant <onboarding@resend.dev>',
     to: toEmail,
-    subject: `You've been invited to your Dwella resident portal`,
+    subject: `You've been invited to your Zenant resident portal`,
     html: `
 <!DOCTYPE html>
 <html>
@@ -43,7 +43,7 @@ export async function sendTenantInvite({
             <table cellpadding="0" cellspacing="0">
               <tr>
                 <td style="background:rgba(255,255,255,0.15);border-radius:10px;padding:10px 14px;display:inline-block;">
-                  <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.5px;">Dwella</span>
+                  <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.5px;">Zenant</span>
                 </td>
               </tr>
             </table>
@@ -58,7 +58,7 @@ export async function sendTenantInvite({
           <td style="padding:32px 36px;">
             <p style="color:#374151;font-size:15px;margin:0 0 24px;">Hi ${toName},</p>
             <p style="color:#374151;font-size:15px;margin:0 0 24px;">
-              Your landlord has set up a Dwella portal for your residence. You can use it to pay rent, submit maintenance requests, and message your property manager.
+              Your landlord has set up a Zenant portal for your residence. You can use it to pay rent, submit maintenance requests, and message your property manager.
             </p>
 
             <!-- Property card -->
@@ -101,7 +101,7 @@ export async function sendTenantInvite({
         <!-- Footer -->
         <tr>
           <td style="padding:20px 36px;border-top:1px solid #f3f4f6;">
-            <p style="color:#d1d5db;font-size:11px;margin:0;text-align:center;">Dwella · Resident Management Platform</p>
+            <p style="color:#d1d5db;font-size:11px;margin:0;text-align:center;">Zenant · Resident Management Platform</p>
           </td>
         </tr>
 

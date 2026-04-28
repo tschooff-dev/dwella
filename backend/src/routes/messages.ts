@@ -108,6 +108,28 @@ messagesRouter.post('/:leaseId', requireAuth, async (req, res: Response) => {
   }
 })
 
+// DELETE /api/messages/:messageId/delete — landlord deletes a message in their thread
+messagesRouter.delete('/:messageId/delete', requireAuth, async (req, res: Response) => {
+  const authReq = req as AuthenticatedRequest
+  try {
+    const landlordId = await getLandlordId(authReq.auth.userId)
+    if (!landlordId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const message = await prisma.message.findFirst({
+      where: {
+        id: req.params.messageId,
+        lease: { unit: { property: { landlordId } } },
+      },
+    })
+    if (!message) return res.status(404).json({ error: 'Message not found' })
+
+    await prisma.message.delete({ where: { id: req.params.messageId } })
+    res.json({ ok: true })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete message' })
+  }
+})
+
 // GET /api/messages/unread-total — total unread for landlord badge
 messagesRouter.get('/meta/unread-total', requireAuth, async (req, res: Response) => {
   const authReq = req as AuthenticatedRequest

@@ -17,6 +17,7 @@ import { tenantRouter } from './routes/tenant'
 import { messagesRouter } from './routes/messages'
 import { invitesRouter } from './routes/invites'
 import { maintenanceRouter } from './routes/maintenance'
+import { settingsRouter } from './routes/settings'
 
 const app = express()
 const PORT = process.env.PORT ?? 3001
@@ -78,6 +79,9 @@ app.use('/api/documents', documentsRouter)
 
 // Tenant invites (public GET, auth POST)
 app.use('/api/invites', invitesRouter)
+
+// Landlord settings
+app.use('/api/settings', settingsRouter)
 
 // Remaining webhooks (Clerk, etc.) — JSON body
 app.use('/api/webhooks', webhooksRouter)

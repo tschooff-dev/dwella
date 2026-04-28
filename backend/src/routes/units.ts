@@ -1,5 +1,7 @@
-import { Router } from 'express'
+import { Router, Response } from 'express'
+import { randomBytes } from 'crypto'
 import { prisma } from '../lib/prisma'
+import { requireAuth, AuthenticatedRequest } from '../middleware/auth'
 
 export const unitsRouter = Router()
 
@@ -63,6 +65,31 @@ unitsRouter.post('/', async (req, res) => {
     res.status(201).json(unit)
   } catch (err) {
     res.status(500).json({ error: 'Failed to create unit' })
+  }
+})
+
+// POST /api/units/:id/apply-token — generate a new one-time apply token (landlord auth)
+unitsRouter.post('/:id/apply-token', requireAuth, async (req, res: Response) => {
+  const authReq = req as AuthenticatedRequest
+  try {
+    const landlord = await prisma.user.findUnique({
+      where: { clerkId: authReq.auth.userId },
+      select: { id: true },
+    })
+    if (!landlord) return res.status(401).json({ error: 'Unauthorized' })
+
+    const unit = await prisma.unit.findFirst({
+      where: { id: req.params.id, property: { landlordId: landlord.id } },
+    })
+    if (!unit) return res.status(404).json({ error: 'Unit not found' })
+
+    const token = randomBytes(20).toString('hex')
+    await prisma.unit.update({ where: { id: unit.id }, data: { applyToken: token } })
+
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173'
+    res.json({ token, url: `${frontendUrl}/apply/${token}` })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to generate apply token' })
   }
 })
 

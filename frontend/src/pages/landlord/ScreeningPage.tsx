@@ -142,14 +142,22 @@ function ApproveDrawer({ application, onClose, onApproved }: { application: Appl
 }
 
 function ApplyLinkButton({ units }: { units: VacantUnit[] }) {
+  const { apiFetch } = useApi()
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState<string | null>(null)
-  const base = window.location.origin
+  const [generating, setGenerating] = useState<string | null>(null)
 
-  function copy(unitId: string) {
-    navigator.clipboard.writeText(`${base}/apply/${unitId}`)
-    setCopied(unitId)
-    setTimeout(() => setCopied(null), 2000)
+  async function generateAndCopy(unitId: string) {
+    setGenerating(unitId)
+    try {
+      const res = await apiFetch(`/api/units/${unitId}/apply-token`, { method: 'POST' })
+      const { url } = await res.json()
+      navigator.clipboard.writeText(url)
+      setCopied(unitId)
+      setTimeout(() => setCopied(null), 2000)
+    } finally {
+      setGenerating(null)
+    }
   }
 
   return (
@@ -165,21 +173,29 @@ function ApplyLinkButton({ units }: { units: VacantUnit[] }) {
             {units.length === 0 ? (
               <p className="text-xs text-gray-400 px-4 py-3">No vacant units available.</p>
             ) : (
-              units.map(u => (
-                <button
-                  key={u.id}
-                  onClick={() => copy(u.id)}
-                  className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 text-left"
-                >
-                  <div>
-                    <div className="text-xs font-medium text-gray-900">{u.property.name} · Unit {u.unitNumber}</div>
-                    <div className="text-[10px] text-gray-400 font-mono truncate">/apply/{u.id.slice(0, 8)}…</div>
-                  </div>
-                  <span className={`text-[10px] font-medium shrink-0 ml-2 ${copied === u.id ? 'text-green-600' : 'text-indigo-600'}`}>
-                    {copied === u.id ? 'Copied!' : 'Copy'}
-                  </span>
-                </button>
-              ))
+              <>
+                <p className="text-[10px] text-gray-400 px-4 pt-2.5 pb-1">Each link is single-use — it expires after one application.</p>
+                {units.map(u => {
+                  const isGenerating = generating === u.id
+                  const isCopied = copied === u.id
+                  return (
+                    <button
+                      key={u.id}
+                      onClick={() => generateAndCopy(u.id)}
+                      disabled={isGenerating}
+                      className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 text-left disabled:opacity-50"
+                    >
+                      <div>
+                        <div className="text-xs font-medium text-gray-900">{u.property.name} · Unit {u.unitNumber}</div>
+                        <div className="text-[10px] text-gray-400">Single-use link</div>
+                      </div>
+                      <span className={`text-[10px] font-medium shrink-0 ml-2 ${isCopied ? 'text-green-600' : 'text-indigo-600'}`}>
+                        {isGenerating ? 'Generating…' : isCopied ? 'Copied!' : 'Copy'}
+                      </span>
+                    </button>
+                  )
+                })}
+              </>
             )}
           </div>
         </>

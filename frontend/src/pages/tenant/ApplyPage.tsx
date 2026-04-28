@@ -60,7 +60,7 @@ function CheckIcon({ className = 'w-3.5 h-3.5' }: { className?: string }) {
 }
 
 export default function ApplyPage() {
-  const { unitId } = useParams<{ unitId?: string }>()
+  const { unitId: token } = useParams<{ unitId?: string }>()
   const [unit, setUnit] = useState<UnitInfo | null>(null)
   const [unitError, setUnitError] = useState('')
   const [step, setStep] = useState<Step>('info')
@@ -99,17 +99,27 @@ export default function ApplyPage() {
   const [consentError, setConsentError] = useState('')
 
   useEffect(() => {
-    if (!unitId) return
-    fetch(`${API}/api/applications/unit/${unitId}`)
-      .then(r => r.ok ? r.json() : Promise.reject())
+    if (!token) return
+    fetch(`${API}/api/applications/token/${token}`)
+      .then(r => {
+        if (r.status === 410) throw new Error('used')
+        if (!r.ok) throw new Error('not_found')
+        return r.json()
+      })
       .then(setUnit)
-      .catch(() => setUnitError('Unit not found. Please check your application link.'))
-  }, [unitId])
+      .catch(err => {
+        if (err.message === 'used') {
+          setUnitError('This application link has already been used. Please request a new one from your landlord.')
+        } else {
+          setUnitError('Invalid application link. Please check the URL or request a new link from your landlord.')
+        }
+      })
+  }, [token])
 
   // Step 1: create the application
   async function handleInfoSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!unitId) return
+    if (!token) return
     setSubmittingInfo(true)
     setInfoError('')
     try {
@@ -117,7 +127,7 @@ export default function ApplyPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          unitId,
+          token,
           applicantName: `${firstName} ${lastName}`.trim(),
           applicantEmail: email,
           applicantPhone: phone || undefined,
@@ -125,12 +135,16 @@ export default function ApplyPage() {
           creditScore: creditScore ? Number(creditScore) : undefined,
         }),
       })
+      if (res.status === 410) {
+        setInfoError('This application link has already been used. Please request a new one from your landlord.')
+        return
+      }
       if (!res.ok) throw new Error('Failed to create application')
       const app = await res.json()
       setApplicationId(app.id)
       setStep('income')
-    } catch {
-      setInfoError('Something went wrong. Please try again.')
+    } catch (err: any) {
+      setInfoError(err.message?.includes('already been used') ? err.message : 'Something went wrong. Please try again.')
     } finally {
       setSubmittingInfo(false)
     }
@@ -189,11 +203,11 @@ export default function ApplyPage() {
     return `${digits.slice(0, 3)}-${digits.slice(3, 5)}-${digits.slice(5)}`
   }
 
-  if (!unitId) {
+  if (!token) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
         <div className="text-center">
-          <p className="text-sm text-gray-500">No unit specified. Please use a valid application link.</p>
+          <p className="text-sm text-gray-500">No application link provided. Please use a valid link from your landlord.</p>
         </div>
       </div>
     )
