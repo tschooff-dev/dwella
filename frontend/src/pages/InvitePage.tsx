@@ -27,10 +27,14 @@ export default function InvitePage() {
   const apiBase = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
 
   useEffect(() => {
+    // Store token before sign-up so OnboardingPage can skip the role selector
+    if (token) localStorage.setItem('pendingInviteToken', token)
+
     fetch(`${apiBase}/api/invites/${token}`)
       .then(async r => {
         if (!r.ok) {
           const body = await r.json()
+          localStorage.removeItem('pendingInviteToken')
           setError(body.error ?? 'Invite not found')
           return
         }

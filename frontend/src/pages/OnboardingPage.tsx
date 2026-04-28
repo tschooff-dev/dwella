@@ -17,7 +17,12 @@ export default function OnboardingPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
+  const pendingInviteToken = localStorage.getItem('pendingInviteToken')
+
   useEffect(() => {
+    // Pre-set role to TENANT if arriving via invite link
+    if (pendingInviteToken) setRole('TENANT')
+
     apiFetch('/api/users/me')
       .then(r => r.json())
       .then(u => {
@@ -53,7 +58,12 @@ export default function OnboardingPage() {
       })
       if (!res.ok) throw new Error('Setup failed')
 
-      navigate(role === 'LANDLORD' ? '/landlord/dashboard' : '/tenant/portal', { replace: true })
+      if (pendingInviteToken) {
+        localStorage.removeItem('pendingInviteToken')
+        navigate(`/invite/${pendingInviteToken}`, { replace: true })
+      } else {
+        navigate(role === 'LANDLORD' ? '/landlord/dashboard' : '/tenant/portal', { replace: true })
+      }
     } catch {
       setError('Something went wrong. Please try again.')
     } finally {
@@ -89,8 +99,8 @@ export default function OnboardingPage() {
         </p>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          {/* Role picker — only for new users */}
-          {!existingRole && (
+          {/* Role picker — only for new users not arriving via invite */}
+          {!existingRole && !pendingInviteToken && (
             <div>
               <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 8 }}>I am a…</label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -112,6 +122,13 @@ export default function OnboardingPage() {
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Invite context banner */}
+          {pendingInviteToken && !existingRole && (
+            <div style={{ background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 10, padding: '12px 14px', fontSize: 12, color: '#4338ca' }}>
+              🔑 You're joining as a <strong>tenant</strong> via an invite link. Just add your name below to continue.
             </div>
           )}
 
