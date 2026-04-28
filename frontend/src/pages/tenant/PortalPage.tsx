@@ -195,9 +195,6 @@ function AddPaymentMethodModal({ onClose, onAdded }: { onClose: () => void; onAd
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
-        <div style={{ fontSize: 12, color: '#6b7280', background: '#f4f4f8', borderRadius: 8, padding: '10px 14px', marginBottom: 20 }}>
-          <strong style={{ color: '#0d0f18' }}>Fees:</strong>&nbsp; ACH bank transfer — $5.00 flat &nbsp;·&nbsp; Debit card — 1.5% &nbsp;·&nbsp; Credit card — 3.0%
-        </div>
         {initError && <p style={{ color: '#dc2626', fontSize: 13 }}>{initError}</p>}
         {!clientSecret && !initError && <div style={{ textAlign: 'center', padding: '32px 0', color: '#9ca3af', fontSize: 13 }}>Loading…</div>}
         {clientSecret && (
@@ -315,7 +312,7 @@ function PaymentMethodsSection({ methods, loading, onAdd, onRemove }: { methods:
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
           <p style={{ fontSize: 13, fontWeight: 700, color: '#0d0f18', margin: 0 }}>Payment Methods</p>
-          <p style={{ fontSize: 11, color: '#9ca3af', margin: '3px 0 0' }}>ACH — $5.00 flat · Debit — 1.5% · Credit — 3.0%</p>
+          <p style={{ fontSize: 11, color: '#9ca3af', margin: '3px 0 0' }}>Saved payment methods</p>
         </div>
         <button onClick={onAdd} className="btn-ghost" style={{ fontSize: 12, padding: '7px 14px' }}>
           <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
@@ -329,7 +326,6 @@ function PaymentMethodsSection({ methods, loading, onAdd, onRemove }: { methods:
       {!loading && methods.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {methods.map(m => {
-            const { text } = feeInfo(m)
             return (
               <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', border: '1.5px solid #e6e6ef', borderRadius: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -340,8 +336,8 @@ function PaymentMethodsSection({ methods, loading, onAdd, onRemove }: { methods:
                     </p>
                     <p style={{ fontSize: 11, color: '#9ca3af', margin: '2px 0 0' }}>
                       {m.type === 'us_bank_account'
-                        ? `${(m.accountType ?? 'checking').charAt(0).toUpperCase() + (m.accountType ?? 'checking').slice(1)} · ${text}`
-                        : `${m.funding === 'debit' ? 'Debit' : 'Credit'} · Exp ${m.expMonth}/${String(m.expYear).slice(-2)} · ${text}`}
+                        ? `${(m.accountType ?? 'checking').charAt(0).toUpperCase() + (m.accountType ?? 'checking').slice(1)}`
+                        : `${m.funding === 'debit' ? 'Debit' : 'Credit'} · Exp ${m.expMonth}/${String(m.expYear).slice(-2)}`}
                     </p>
                   </div>
                 </div>
