@@ -105,7 +105,7 @@ tenantRouter.post('/payments/:id/checkout', requireAuth, async (req, res: Respon
         quantity: 1,
       }],
       metadata: { paymentId: payment.id, tenantId: user.id },
-      success_url: `${frontendUrl}/tenant/portal?tab=payments&paid=${payment.id}`,
+      success_url: `${frontendUrl}/tenant/portal?tab=payments&paid=${payment.id}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${frontendUrl}/tenant/portal?tab=payments`,
       customer_email: user.email,
     })
@@ -349,6 +349,46 @@ tenantRouter.delete('/payment-methods/:pmId', requireAuth, async (req, res: Resp
     res.json({ success: true })
   } catch (err) {
     res.status(500).json({ error: 'Failed to remove payment method' })
+  }
+})
+
+// POST /api/tenant/payments/:id/verify-checkout — confirm a Stripe Checkout session and mark paid
+tenantRouter.post('/payments/:id/verify-checkout', requireAuth, async (req, res: Response) => {
+  const authReq = req as AuthenticatedRequest
+  try {
+    const user = await getTenantUser(authReq.auth.userId)
+    if (!user) return res.status(401).json({ error: 'Unauthorized' })
+
+    const { sessionId } = req.body
+    if (!sessionId) return res.status(400).json({ error: 'sessionId is required' })
+
+    const payment = await prisma.payment.findFirst({
+      where: { id: req.params.id, tenantId: user.id },
+    })
+    if (!payment) return res.status(404).json({ error: 'Payment not found' })
+    if (payment.status === 'PAID') return res.json({ success: true })
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId)
+    if (session.metadata?.paymentId !== payment.id) {
+      return res.status(403).json({ error: 'Session does not match payment' })
+    }
+    if (session.payment_status !== 'paid') {
+      return res.status(400).json({ error: 'Payment not completed' })
+    }
+
+    await prisma.payment.update({
+      where: { id: payment.id },
+      data: {
+        status: 'PAID',
+        paidDate: new Date(),
+        stripePaymentId: typeof session.payment_intent === 'string' ? session.payment_intent : session.id,
+        method: 'Card',
+      },
+    })
+    res.json({ success: true })
+  } catch (err) {
+    console.error('Verify checkout error:', err)
+    res.status(500).json({ error: 'Failed to verify checkout' })
   }
 })
 

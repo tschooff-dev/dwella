@@ -813,6 +813,7 @@ export default function PortalPage() {
   const navigate = useNavigate()
   const tab = searchParams.get('tab') ?? 'overview'
   const paidId = searchParams.get('paid')
+  const sessionId = searchParams.get('session_id')
   const setupIntentParam = searchParams.get('setup_intent')
   const { setUnread } = useOutletContext<{ setUnread: (n: number) => void }>()
   const { apiFetch } = useApi()
@@ -844,6 +845,17 @@ export default function PortalPage() {
     apiFetch('/api/tenant/maintenance').then(r => r.json()).then(d => Array.isArray(d) ? setMaintenance(d) : null)
     fetchMethods()
   }, [])
+
+  useEffect(() => {
+    if (!paidId || !sessionId) return
+    apiFetch(`/api/tenant/payments/${paidId}/verify-checkout`, {
+      method: 'POST',
+      body: JSON.stringify({ sessionId }),
+    })
+      .then(() => fetchPayments())
+      .catch(() => {})
+    setSearchParams(prev => { prev.delete('session_id'); return prev })
+  }, [paidId, sessionId])
 
   useEffect(() => {
     if (!setupIntentParam) return
