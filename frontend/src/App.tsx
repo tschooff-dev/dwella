@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { SignIn, SignUp, useAuth } from '@clerk/clerk-react'
+import { useAuth } from '@clerk/clerk-react'
 import { useEffect, useState } from 'react'
 import LandlordLayout from './layouts/LandlordLayout'
 import TenantLayout from './layouts/TenantLayout'
@@ -15,6 +15,7 @@ import PortalPage from './pages/tenant/PortalPage'
 import ApplyPage from './pages/tenant/ApplyPage'
 import InvitePage from './pages/InvitePage'
 import OnboardingPage from './pages/OnboardingPage'
+import { SignInPage, SignUpPage } from './pages/AuthPage'
 import { useApi } from './lib/api'
 
 function RoleRedirect() {
@@ -73,14 +74,8 @@ export default function App() {
         <Route path="/" element={<RoleRedirect />} />
 
         {/* Auth pages */}
-        <Route
-          path="/sign-in/*"
-          element={<div className="min-h-screen flex items-center justify-center bg-gray-50"><SignIn routing="path" path="/sign-in" afterSignInUrl="/" /></div>}
-        />
-        <Route
-          path="/sign-up/*"
-          element={<div className="min-h-screen flex items-center justify-center bg-gray-50"><SignUp routing="path" path="/sign-up" afterSignUpUrl="/" /></div>}
-        />
+        <Route path="/sign-in/*" element={<SignInPage />} />
+        <Route path="/sign-up/*" element={<SignUpPage />} />
 
         {/* Onboarding */}
         <Route path="/onboarding" element={<OnboardingPage />} />
