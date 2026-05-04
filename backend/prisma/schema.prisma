@@ -159,7 +159,8 @@ model Lease {
   rentAmount  Float
   depositPaid Float?
   status      LeaseStatus @default(ACTIVE)
-  documentUrl String?
+  documentUrl          String?
+  landlordDeletedAt    DateTime?
   payments    Payment[]
   messages    Message[]
   createdAt   DateTime    @default(now())

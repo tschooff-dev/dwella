@@ -17,7 +17,7 @@ messagesRouter.get('/conversations', requireAuth, async (req, res: Response) => 
     if (!landlordId) return res.status(401).json({ error: 'Unauthorized' })
 
     const leases = await prisma.lease.findMany({
-      where: { unit: { property: { landlordId } }, status: 'ACTIVE' },
+      where: { unit: { property: { landlordId } }, status: 'ACTIVE', landlordDeletedAt: null },
       include: {
         tenant: { select: { id: true, firstName: true, lastName: true, email: true } },
         unit: { include: { property: { select: { name: true } } } },
@@ -48,6 +48,7 @@ messagesRouter.get('/conversations', requireAuth, async (req, res: Response) => 
       const bTime = b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0
       return bTime - aTime
     }))
+
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch conversations' })
   }
@@ -108,25 +109,25 @@ messagesRouter.post('/:leaseId', requireAuth, async (req, res: Response) => {
   }
 })
 
-// DELETE /api/messages/:messageId/delete — landlord deletes a message in their thread
-messagesRouter.delete('/:messageId/delete', requireAuth, async (req, res: Response) => {
+// DELETE /api/messages/conversations/:leaseId — landlord hides a conversation (only affects their view)
+messagesRouter.delete('/conversations/:leaseId', requireAuth, async (req, res: Response) => {
   const authReq = req as AuthenticatedRequest
   try {
     const landlordId = await getLandlordId(authReq.auth.userId)
     if (!landlordId) return res.status(401).json({ error: 'Unauthorized' })
 
-    const message = await prisma.message.findFirst({
-      where: {
-        id: req.params.messageId,
-        lease: { unit: { property: { landlordId } } },
-      },
+    const lease = await prisma.lease.findFirst({
+      where: { id: req.params.leaseId, unit: { property: { landlordId } } },
     })
-    if (!message) return res.status(404).json({ error: 'Message not found' })
+    if (!lease) return res.status(404).json({ error: 'Conversation not found' })
 
-    await prisma.message.delete({ where: { id: req.params.messageId } })
+    await prisma.lease.update({
+      where: { id: req.params.leaseId },
+      data: { landlordDeletedAt: new Date() },
+    })
     res.json({ ok: true })
   } catch (err) {
-    res.status(500).json({ error: 'Failed to delete message' })
+    res.status(500).json({ error: 'Failed to delete conversation' })
   }
 })
 

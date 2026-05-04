@@ -1,0 +1,1 @@
+ALTER TABLE "leases" ADD COLUMN IF NOT EXISTS "landlordDeletedAt" TIMESTAMP(3);

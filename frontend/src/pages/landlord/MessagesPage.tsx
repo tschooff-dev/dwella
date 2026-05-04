@@ -23,8 +23,7 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [body, setBody] = useState('')
   const [sending, setSending] = useState(false)
-  const [hoveredMsg, setHoveredMsg] = useState<string | null>(null)
-  const [deleting, setDeleting] = useState<string | null>(null)
+  const [deletingConv, setDeletingConv] = useState(false)
   const { apiFetch } = useApi()
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -51,16 +50,19 @@ export default function MessagesPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  async function handleDelete(messageId: string) {
-    if (!selected) return
-    setDeleting(messageId)
+  async function handleDeleteConversation() {
+    if (!selected || deletingConv) return
+    if (!confirm(`Delete your conversation with ${selected.tenant.firstName}? This only removes it from your view.`)) return
+    setDeletingConv(true)
     try {
-      const res = await apiFetch(`/api/messages/${messageId}/delete`, { method: 'DELETE' })
+      const res = await apiFetch(`/api/messages/conversations/${selected.leaseId}`, { method: 'DELETE' })
       if (res.ok) {
-        setMessages(prev => prev.filter(m => m.id !== messageId))
+        setConversations(prev => prev.filter(c => c.leaseId !== selected.leaseId))
+        setSelected(null)
+        setMessages([])
       }
     } finally {
-      setDeleting(null)
+      setDeletingConv(false)
     }
   }
 
@@ -158,10 +160,22 @@ export default function MessagesPage() {
             {/* Header */}
             <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0f0f5', display: 'flex', alignItems: 'center', gap: 12, background: '#fafafa' }}>
               <Avatar name={`${selected.tenant.firstName} ${selected.tenant.lastName}`} size={34} />
-              <div>
+              <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 14, fontWeight: 700 }}>{selected.tenant.firstName} {selected.tenant.lastName}</div>
                 <div style={{ fontSize: 11, color: '#9ca3af' }}>{selected.unit.property} · Unit {selected.unit.number}</div>
               </div>
+              <button
+                onClick={handleDeleteConversation}
+                disabled={deletingConv}
+                title="Delete conversation"
+                style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 6, color: '#9ca3af', display: 'flex', alignItems: 'center', borderRadius: 6, opacity: deletingConv ? 0.4 : 1 }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#ef4444')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#9ca3af')}
+              >
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
             </div>
 
             {/* Messages */}
@@ -171,45 +185,20 @@ export default function MessagesPage() {
               )}
               {messages.map((msg, i) => {
                 const isMe = msg.sender.role === 'LANDLORD'
-                const isHovered = hoveredMsg === msg.id
-                const isBeingDeleted = deleting === msg.id
                 return (
                   <div
                     key={msg.id || i}
                     style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start', gap: 4 }}
-                    onMouseEnter={() => setHoveredMsg(msg.id)}
-                    onMouseLeave={() => setHoveredMsg(null)}
                   >
                     {!isMe && <span style={{ fontSize: 10, color: '#9ca3af', paddingLeft: 4 }}>{msg.sender.firstName}</span>}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexDirection: isMe ? 'row' : 'row-reverse' }}>
-                      <div style={{
-                        maxWidth: '72%', padding: '10px 14px', borderRadius: 14, fontSize: 13, lineHeight: 1.5,
-                        background: isBeingDeleted ? '#e5e7eb' : isMe ? '#4f46e5' : '#f4f4f8',
-                        color: isMe ? '#fff' : '#0d0f18',
-                        borderBottomRightRadius: isMe ? 4 : 14,
-                        borderBottomLeftRadius: isMe ? 14 : 4,
-                        opacity: isBeingDeleted ? 0.5 : 1,
-                        transition: 'background 0.15s, opacity 0.15s',
-                      }}>
-                        {msg.body}
-                      </div>
-                      {isHovered && !isBeingDeleted && (
-                        <button
-                          onClick={() => handleDelete(msg.id)}
-                          title="Delete message"
-                          style={{
-                            border: 'none', background: 'transparent', cursor: 'pointer',
-                            padding: 4, color: '#ef4444', display: 'flex', alignItems: 'center',
-                            opacity: 0.7, borderRadius: 4,
-                          }}
-                          onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-                          onMouseLeave={e => (e.currentTarget.style.opacity = '0.7')}
-                        >
-                          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      )}
+                    <div style={{
+                      maxWidth: '72%', padding: '10px 14px', borderRadius: 14, fontSize: 13, lineHeight: 1.5,
+                      background: isMe ? '#4f46e5' : '#f4f4f8',
+                      color: isMe ? '#fff' : '#0d0f18',
+                      borderBottomRightRadius: isMe ? 4 : 14,
+                      borderBottomLeftRadius: isMe ? 14 : 4,
+                    }}>
+                      {msg.body}
                     </div>
                     <span style={{ fontSize: 10, color: '#c4c4d0', paddingLeft: 4 }}>
                       {new Date(msg.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
