@@ -1,5 +1,6 @@
 import { SignIn, SignUp } from '@clerk/clerk-react'
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
@@ -257,7 +258,7 @@ function RightPanel({ children }: { children: React.ReactNode }) {
 
 // ── Mobile: Splash screen ─────────────────────────────────────────────────────
 
-function MobileSplash({ onContinue }: { onContinue: () => void }) {
+function MobileSplash({ onGetStarted, onSignIn }: { onGetStarted: () => void; onSignIn: () => void }) {
   return (
     <div style={{
       height: '100vh', display: 'flex', flexDirection: 'column',
@@ -302,12 +303,12 @@ function MobileSplash({ onContinue }: { onContinue: () => void }) {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <button onClick={onContinue} style={{
+          <button onClick={onGetStarted} style={{
             background: '#4f46e5', color: '#fff', border: 'none', borderRadius: 14,
             padding: '16px', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
             boxShadow: '0 4px 20px rgba(79,70,229,0.4)',
           }}>Get Started</button>
-          <button onClick={onContinue} style={{
+          <button onClick={onSignIn} style={{
             background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.75)',
             border: '1px solid rgba(255,255,255,0.15)', borderRadius: 14,
             padding: '16px', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
@@ -323,7 +324,9 @@ function MobileSplash({ onContinue }: { onContinue: () => void }) {
 
 // ── Mobile: Form screen ───────────────────────────────────────────────────────
 
-function MobileForm({ onBack, children }: { onBack: () => void; children: React.ReactNode }) {
+function MobileForm({ onBack, mode, children }: { onBack: () => void; mode: 'signin' | 'signup'; children: React.ReactNode }) {
+  const heading = mode === 'signup' ? 'Welcome to Zenant' : 'Welcome back'
+  const subtitle = mode === 'signup' ? 'Create your account to get started' : 'Sign in to your account to continue'
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f4f4f8' }}>
       {/* Dark header band */}
@@ -346,8 +349,8 @@ function MobileForm({ onBack, children }: { onBack: () => void; children: React.
             <ArchMark size={24} color="#818cf8" />
             <span style={{ fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>Zenant</span>
           </div>
-          <h2 style={{ fontSize: 26, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', marginBottom: 6 }}>Welcome back</h2>
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>Sign in to your account to continue</p>
+          <h2 style={{ fontSize: 26, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', marginBottom: 6 }}>{heading}</h2>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>{subtitle}</p>
         </div>
       </div>
 
@@ -368,12 +371,18 @@ function MobileForm({ onBack, children }: { onBack: () => void; children: React.
 
 export function SignInPage() {
   const isMobile = useIsMobile()
+  const navigate = useNavigate()
   const [showForm, setShowForm] = useState(false)
 
   if (isMobile) {
-    if (!showForm) return <MobileSplash onContinue={() => setShowForm(true)} />
+    if (!showForm) return (
+      <MobileSplash
+        onGetStarted={() => navigate('/sign-up')}
+        onSignIn={() => setShowForm(true)}
+      />
+    )
     return (
-      <MobileForm onBack={() => setShowForm(false)}>
+      <MobileForm onBack={() => setShowForm(false)} mode="signin">
         <SignIn routing="path" path="/sign-in" afterSignInUrl="/" appearance={clerkAppearanceMobile} />
       </MobileForm>
     )
@@ -391,12 +400,18 @@ export function SignInPage() {
 
 export function SignUpPage() {
   const isMobile = useIsMobile()
-  const [showForm, setShowForm] = useState(false)
+  const navigate = useNavigate()
+  const [showForm, setShowForm] = useState(true)
 
   if (isMobile) {
-    if (!showForm) return <MobileSplash onContinue={() => setShowForm(true)} />
+    if (!showForm) return (
+      <MobileSplash
+        onGetStarted={() => setShowForm(true)}
+        onSignIn={() => navigate('/sign-in')}
+      />
+    )
     return (
-      <MobileForm onBack={() => setShowForm(false)}>
+      <MobileForm onBack={() => setShowForm(false)} mode="signup">
         <SignUp routing="path" path="/sign-up" afterSignUpUrl="/" appearance={clerkAppearanceMobile} />
       </MobileForm>
     )
