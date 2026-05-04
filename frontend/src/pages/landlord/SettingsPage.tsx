@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useApi } from '../../lib/api'
+import { useSearchParams } from 'react-router-dom'
 
 type Settings = {
   // Notifications
@@ -134,9 +135,113 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
+function PayoutsSection() {
+  const { apiFetch } = useApi()
+  const [status, setStatus] = useState<{ connected: boolean; ready: boolean; email?: string } | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [searchParams] = useSearchParams()
+
+  useEffect(() => {
+    apiFetch('/api/connect/status').then(r => r.json()).then(setStatus)
+  }, [])
+
+  // Refresh status after returning from Stripe onboarding
+  useEffect(() => {
+    if (searchParams.get('connect')) {
+      apiFetch('/api/connect/status').then(r => r.json()).then(setStatus)
+    }
+  }, [searchParams])
+
+  async function handleOnboard() {
+    setLoading(true)
+    try {
+      const res = await apiFetch('/api/connect/onboard', { method: 'POST' })
+      const { url } = await res.json()
+      window.location.href = url
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleDashboard() {
+    setLoading(true)
+    try {
+      const res = await apiFetch('/api/connect/dashboard', { method: 'POST' })
+      const { url } = await res.json()
+      window.open(url, '_blank')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>Payouts</div>
+      <div className="card" style={{ padding: '20px' }}>
+        {!status ? (
+          <div style={{ fontSize: 13, color: '#9ca3af' }}>Loading…</div>
+        ) : status.ready ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#d1fae5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="16" height="16" fill="none" stroke="#059669" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+              </div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#0d0f18' }}>Bank account connected</div>
+                {status.email && <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 1 }}>{status.email}</div>}
+              </div>
+            </div>
+            <button
+              onClick={handleDashboard}
+              disabled={loading}
+              style={{ fontSize: 12, fontWeight: 600, color: '#4f46e5', background: 'none', border: '1px solid #e5e7eb', borderRadius: 8, padding: '6px 14px', cursor: 'pointer' }}
+            >
+              View Stripe dashboard
+            </button>
+          </div>
+        ) : status.connected ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#0d0f18' }}>Setup in progress</div>
+              <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 1 }}>Finish connecting your bank account to receive rent payments.</div>
+            </div>
+            <button
+              onClick={handleOnboard}
+              disabled={loading}
+              style={{ fontSize: 12, fontWeight: 600, color: '#fff', background: '#4f46e5', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+            >
+              {loading ? 'Loading…' : 'Continue setup'}
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#0d0f18' }}>Connect your bank account</div>
+              <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 1, lineHeight: 1.5 }}>
+                Link your bank account via Stripe to receive rent payments directly. A 1% platform fee applies per transaction.
+              </div>
+            </div>
+            <button
+              onClick={handleOnboard}
+              disabled={loading}
+              style={{ fontSize: 12, fontWeight: 600, color: '#fff', background: '#4f46e5', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+            >
+              {loading ? 'Loading…' : 'Connect bank account'}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function SettingsPage() {
   const { apiFetch } = useApi()
-  const [tab, setTab] = useState<Tab>('notifications')
+  const [searchParams] = useSearchParams()
+  const [tab, setTab] = useState<Tab>(() => {
+    const t = searchParams.get('tab')
+    return (t && ['notifications','rent','applications','maintenance','portal','payments','account'].includes(t) ? t : 'notifications') as Tab
+  })
   const [settings, setSettings] = useState<Settings | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -488,6 +593,7 @@ export default function SettingsPage() {
           {/* ── PAYMENTS ── */}
           {tab === 'payments' && (
             <>
+              <PayoutsSection />
               <Section title="ACH (Bank Transfer)">
                 <Field label="Accept ACH payments" hint="Allow tenants to pay rent via bank transfer.">
                   <Toggle checked={settings.achEnabled} onChange={v => set('achEnabled', v)} />

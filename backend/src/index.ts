@@ -18,6 +18,7 @@ import { messagesRouter } from './routes/messages'
 import { invitesRouter } from './routes/invites'
 import { maintenanceRouter } from './routes/maintenance'
 import { settingsRouter } from './routes/settings'
+import { connectRouter } from './routes/connect'
 
 const app = express()
 const PORT = process.env.PORT ?? 3001
@@ -82,6 +83,9 @@ app.use('/api/invites', invitesRouter)
 
 // Landlord settings
 app.use('/api/settings', settingsRouter)
+
+// Stripe Connect
+app.use('/api/connect', connectRouter)
 
 // Remaining webhooks (Clerk, etc.) — JSON body
 app.use('/api/webhooks', webhooksRouter)

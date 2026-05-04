@@ -75,8 +75,10 @@ model User {
   role          Role
   phone         String?
   avatarUrl     String?
-  stripeId      String?
-  createdAt     DateTime  @default(now())
+  stripeId           String?
+  stripeAccountId    String?
+  stripeAccountReady Boolean  @default(false)
+  createdAt          DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   properties          Property[]

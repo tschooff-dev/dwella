@@ -95,6 +95,17 @@ webhooksRouter.post(
           break
         }
 
+        case 'account.updated': {
+          const account = event.data.object as any
+          if (account.details_submitted && account.charges_enabled) {
+            await prisma.user.updateMany({
+              where: { stripeAccountId: account.id },
+              data: { stripeAccountReady: true },
+            })
+          }
+          break
+        }
+
         case 'payment_intent.succeeded': {
           const paymentIntent = event.data.object as any
           const paymentId = paymentIntent.metadata?.paymentId

@@ -84,19 +84,44 @@ tenantRouter.post('/payments/:id/checkout', requireAuth, async (req, res: Respon
 
     const payment = await prisma.payment.findFirst({
       where: { id: req.params.id, tenantId: user.id },
-      include: { lease: { include: { unit: { include: { property: true } } } } },
+      include: {
+        lease: {
+          include: {
+            unit: {
+              include: {
+                property: {
+                  include: { landlord: { select: { stripeAccountId: true, stripeAccountReady: true } } },
+                },
+              },
+            },
+          },
+        },
+      },
     })
     if (!payment) return res.status(404).json({ error: 'Payment not found' })
     if (payment.status === 'PAID') return res.status(400).json({ error: 'Payment already paid' })
 
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173'
+    const amountCents = Math.round(payment.amount * 100)
+    const landlord = payment.lease.unit.property.landlord
+    const feePercent = parseFloat(process.env.PLATFORM_FEE_PERCENT ?? '1') / 100
+    const feeAmount = Math.round(amountCents * feePercent)
+
+    const paymentIntentData: Record<string, any> =
+      landlord.stripeAccountId && landlord.stripeAccountReady
+        ? {
+            application_fee_amount: feeAmount,
+            transfer_data: { destination: landlord.stripeAccountId },
+          }
+        : {}
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
       line_items: [{
         price_data: {
           currency: 'usd',
-          unit_amount: Math.round(payment.amount * 100),
+          unit_amount: amountCents,
           product_data: {
             name: `Rent — ${payment.lease.unit.property.name} Unit ${payment.lease.unit.unitNumber}`,
             description: `Due ${new Date(payment.dueDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`,
@@ -104,6 +129,7 @@ tenantRouter.post('/payments/:id/checkout', requireAuth, async (req, res: Respon
         },
         quantity: 1,
       }],
+      payment_intent_data: Object.keys(paymentIntentData).length ? paymentIntentData : undefined,
       metadata: { paymentId: payment.id, tenantId: user.id },
       success_url: `${frontendUrl}/tenant/portal?tab=payments&paid=${payment.id}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${frontendUrl}/tenant/portal?tab=payments`,
