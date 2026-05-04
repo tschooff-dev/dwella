@@ -1,4 +1,15 @@
 import { SignIn, SignUp } from '@clerk/clerk-react'
+import { useState, useEffect } from 'react'
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
+  }, [])
+  return isMobile
+}
 
 const STATS = [
   { label: 'Properties Managed', value: '12,400+' },
@@ -222,12 +233,12 @@ function LeftPanel() {
   )
 }
 
-function RightPanel({ children }: { children: React.ReactNode }) {
+function RightPanel({ children, fullWidth }: { children: React.ReactNode; fullWidth?: boolean }) {
   return (
     <div style={{
-      width: 520, flexShrink: 0, background: '#f4f4f8',
+      width: fullWidth ? '100%' : 520, flexShrink: 0, background: '#f4f4f8',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      padding: '48px 40px', position: 'relative',
+      padding: fullWidth ? '48px 20px 32px' : '48px 40px', position: 'relative', minHeight: '100vh',
     }}>
       <div style={{ position: 'absolute', top: 32, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -259,10 +270,11 @@ function RightPanel({ children }: { children: React.ReactNode }) {
 }
 
 export function SignInPage() {
+  const isMobile = useIsMobile()
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
-      <LeftPanel />
-      <RightPanel>
+    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: isMobile ? 'auto' : 'hidden' }}>
+      {!isMobile && <LeftPanel />}
+      <RightPanel fullWidth={isMobile}>
         <SignIn
           routing="path"
           path="/sign-in"
@@ -275,10 +287,11 @@ export function SignInPage() {
 }
 
 export function SignUpPage() {
+  const isMobile = useIsMobile()
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
-      <LeftPanel />
-      <RightPanel>
+    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: isMobile ? 'auto' : 'hidden' }}>
+      {!isMobile && <LeftPanel />}
+      <RightPanel fullWidth={isMobile}>
         <SignUp
           routing="path"
           path="/sign-up"
