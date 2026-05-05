@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useUser } from '@clerk/clerk-react'
+import { useUser, useClerk } from '@clerk/clerk-react'
 import { useApi } from '../lib/api'
 
 export default function OnboardingPage() {
   const { user } = useUser()
+  const { signOut } = useClerk()
   const navigate = useNavigate()
   const { apiFetch } = useApi()
 
@@ -166,7 +167,24 @@ export default function OnboardingPage() {
             <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="(555) 000-0000" className="input" />
           </div>
 
-          {error && <p style={{ fontSize: 12, color: '#dc2626', margin: 0 }}>{error}</p>}
+          {error && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <p style={{ fontSize: 12, color: '#dc2626', margin: 0 }}>{error}</p>
+              {error.includes('already exists') && (
+                <button
+                  type="button"
+                  onClick={() => signOut(() => navigate('/sign-in'))}
+                  style={{
+                    alignSelf: 'flex-start', background: 'none', border: 'none',
+                    color: '#4f46e5', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                    padding: 0, textDecoration: 'underline',
+                  }}
+                >
+                  Sign in to your existing account →
+                </button>
+              )}
+            </div>
+          )}
 
           <button
             type="submit"
