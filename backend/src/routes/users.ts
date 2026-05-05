@@ -34,10 +34,13 @@ usersRouter.post('/setup', requireAuth, async (req, res: Response) => {
     const clerkId = authReq.auth.userId
     const fields = { firstName, lastName, phone: phone ?? null, role }
 
-    // Look up by clerkId, then fall back to email (handles re-registrations)
+    // Look up by clerkId first, then by email
     let existing = await prisma.user.findUnique({ where: { clerkId } })
     if (!existing && email) {
-      existing = await prisma.user.findUnique({ where: { email } })
+      const byEmail = await prisma.user.findUnique({ where: { email } })
+      if (byEmail) {
+        return res.status(409).json({ error: 'account_exists' })
+      }
     }
 
     let user

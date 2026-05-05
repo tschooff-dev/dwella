@@ -43,7 +43,11 @@ export default function OnboardingPage() {
     setError('')
     try {
       // Update Clerk profile
-      await user?.update({ firstName: firstName.trim(), lastName: lastName.trim() })
+      try {
+        await user?.update({ firstName: firstName.trim(), lastName: lastName.trim() })
+      } catch (clerkErr) {
+        console.error('Clerk profile update failed:', clerkErr)
+      }
 
       // Update DB
       const res = await apiFetch('/api/users/setup', {
@@ -56,7 +60,14 @@ export default function OnboardingPage() {
           email: user?.primaryEmailAddress?.emailAddress ?? '',
         }),
       })
-      if (!res.ok) throw new Error('Setup failed')
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        console.error('Setup API error:', res.status, body)
+        if (res.status === 409 || body?.error === 'account_exists') {
+          throw new Error('account_exists')
+        }
+        throw new Error(`Setup failed: ${res.status}`)
+      }
 
       if (pendingInviteToken) {
         localStorage.removeItem('pendingInviteToken')
@@ -64,8 +75,11 @@ export default function OnboardingPage() {
       } else {
         navigate(role === 'LANDLORD' ? '/landlord/dashboard' : '/tenant/portal', { replace: true })
       }
-    } catch {
-      setError('Something went wrong. Please try again.')
+    } catch (err: any) {
+      console.error('Onboarding submit error:', err)
+      setError(err?.message === 'account_exists'
+        ? 'An account with this email already exists. Try signing in instead.'
+        : 'Something went wrong. Please try again.')
     } finally {
       setSaving(false)
     }
