@@ -26,6 +26,8 @@ const PORT = process.env.PORT ?? 3001
 const allowedOrigins = new Set([
   process.env.FRONTEND_URL ?? 'http://localhost:5173',
   'http://localhost:5173',
+  'https://zenantapp.com',
+  'https://www.zenantapp.com',
 ])
 
 app.use(cors({
