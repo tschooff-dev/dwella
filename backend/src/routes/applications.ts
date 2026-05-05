@@ -1,6 +1,8 @@
 import { Router, Response } from 'express'
 import { prisma } from '../lib/prisma'
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth'
+import { getLandlordSettings } from '../lib/settingsHelper'
+import { sendNewApplicationAlert } from '../lib/email'
 
 export const applicationsRouter = Router()
 
@@ -144,6 +146,17 @@ applicationsRouter.post('/', async (req, res) => {
     const aiScore = computeAiScore(monthlyIncome, creditScore)
     const aiSummary = generateAiSummary(applicantName, monthlyIncome, creditScore, aiScore)
 
+    // Look up landlord for settings + notification
+    const unit = await prisma.unit.findUnique({
+      where: { id: unitId },
+      include: { property: { include: { landlord: { select: { id: true, email: true, firstName: true, lastName: true } } } } },
+    })
+    const landlord = unit?.property?.landlord
+    const settings = landlord ? await getLandlordSettings(landlord.id) : null
+
+    // Auto-decline if enabled and score is too low
+    const autoDecline = settings?.autoDeclineEnabled && aiScore < (settings?.autoDeclineThreshold ?? 40)
+
     const application = await prisma.application.create({
       data: {
         unitId,
@@ -154,9 +167,22 @@ applicationsRouter.post('/', async (req, res) => {
         creditScore,
         aiScore,
         aiSummary,
-        status: 'PENDING',
+        status: autoDecline ? 'REJECTED' : 'PENDING',
       },
     })
+
+    // Notify landlord
+    if (landlord && settings?.notifyNewApplication && settings.emailDigestFrequency === 'immediate') {
+      sendNewApplicationAlert({
+        toEmail: landlord.email,
+        landlordName: `${landlord.firstName} ${landlord.lastName}`.trim(),
+        applicantName,
+        propertyName: unit!.property.name,
+        unitNumber: unit!.unitNumber,
+        aiScore,
+      }).catch(console.error)
+    }
+
     res.status(201).json(application)
   } catch (err) {
     res.status(500).json({ error: 'Failed to create application' })

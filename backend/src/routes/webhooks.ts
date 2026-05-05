@@ -2,6 +2,8 @@ import { Router, Request, Response } from 'express'
 import { Webhook } from 'svix'
 import { prisma } from '../lib/prisma'
 import { stripe } from '../lib/stripe'
+import { getLandlordSettings } from '../lib/settingsHelper'
+import { sendPaymentReceivedAlert } from '../lib/email'
 
 export const webhooksRouter = Router()
 
@@ -112,14 +114,27 @@ webhooksRouter.post(
 
           if (!paymentId) break
 
-          await prisma.payment.update({
+          const paid = await prisma.payment.update({
             where: { id: paymentId },
-            data: {
-              status: 'PAID',
-              paidDate: new Date(),
-              stripePaymentId: paymentIntent.id,
+            data: { status: 'PAID', paidDate: new Date(), stripePaymentId: paymentIntent.id },
+            include: {
+              tenant: { select: { firstName: true, lastName: true } },
+              lease: { include: { unit: { include: { property: { include: { landlord: { select: { id: true, email: true, firstName: true, lastName: true } } } } } } } },
             },
           })
+
+          const landlord = paid.lease.unit.property.landlord
+          const settings = await getLandlordSettings(landlord.id).catch(() => null)
+          if (settings?.notifyPaymentReceived && settings.emailDigestFrequency === 'immediate') {
+            sendPaymentReceivedAlert({
+              toEmail: landlord.email,
+              landlordName: `${landlord.firstName} ${landlord.lastName}`.trim(),
+              tenantName: `${paid.tenant?.firstName ?? ''} ${paid.tenant?.lastName ?? ''}`.trim(),
+              amount: paid.amount,
+              propertyName: paid.lease.unit.property.name,
+              unitNumber: paid.lease.unit.unitNumber,
+            }).catch(console.error)
+          }
           break
         }
 

@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useApi } from '../../lib/api'
 import { useSearchParams } from 'react-router-dom'
+import i18n from '../../lib/i18n'
 
 type Settings = {
   // Notifications
@@ -51,31 +53,31 @@ type Tab = 'notifications' | 'rent' | 'applications' | 'maintenance' | 'portal' 
 
 const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
   {
-    key: 'notifications', label: 'Notifications',
+    key: 'notifications', label: 'notifications',
     icon: <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>,
   },
   {
-    key: 'rent', label: 'Rent & Fees',
+    key: 'rent', label: 'rent',
     icon: <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
   },
   {
-    key: 'applications', label: 'Applications',
+    key: 'applications', label: 'applications',
     icon: <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>,
   },
   {
-    key: 'maintenance', label: 'Maintenance',
+    key: 'maintenance', label: 'maintenance',
     icon: <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
   },
   {
-    key: 'portal', label: 'Tenant Portal',
+    key: 'portal', label: 'portal',
     icon: <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
   },
   {
-    key: 'payments', label: 'Payments',
+    key: 'payments', label: 'payments',
     icon: <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>,
   },
   {
-    key: 'account', label: 'Account',
+    key: 'account', label: 'account',
     icon: <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>,
   },
 ]
@@ -237,6 +239,7 @@ function PayoutsSection() {
 
 export default function SettingsPage() {
   const { apiFetch } = useApi()
+  const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const [tab, setTab] = useState<Tab>(() => {
     const t = searchParams.get('tab')
@@ -257,6 +260,7 @@ export default function SettingsPage() {
     setSettings(prev => prev ? { ...prev, [key]: value } : prev)
     setDirty(true)
     setSaved(false)
+    if (key === 'language') i18n.changeLanguage(value as string)
   }, [])
 
   async function save() {
@@ -286,8 +290,8 @@ export default function SettingsPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800 }}>Settings</h1>
-          <p style={{ fontSize: 13, color: '#6b7280', marginTop: 4 }}>Customize how Zenant works for your portfolio</p>
+          <h1 style={{ fontSize: 22, fontWeight: 800 }}>{t('settings.title')}</h1>
+          <p style={{ fontSize: 13, color: '#6b7280', marginTop: 4 }}>{t('settings.subtitle')}</p>
         </div>
         <button
           onClick={save}
@@ -299,7 +303,7 @@ export default function SettingsPage() {
             fontSize: 13, fontWeight: 600, transition: 'all 0.2s',
           }}
         >
-          {saving ? 'Saving…' : saved ? 'Saved!' : 'Save Changes'}
+          {saving ? t('settings.saving') : saved ? t('settings.saved') : t('settings.saveChanges')}
         </button>
       </div>
 
@@ -307,21 +311,21 @@ export default function SettingsPage() {
         {/* Sidebar tabs */}
         <div style={{ width: 168, flexShrink: 0 }}>
           <div className="card" style={{ padding: '6px 6px' }}>
-            {TABS.map(t => (
+            {TABS.map(tab_ => (
               <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
+                key={tab_.key}
+                onClick={() => setTab(tab_.key)}
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 8,
                   padding: '8px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
-                  background: tab === t.key ? '#f5f3ff' : 'transparent',
-                  color: tab === t.key ? '#4f46e5' : '#6b7280',
-                  fontSize: 13, fontWeight: tab === t.key ? 600 : 500,
+                  background: tab === tab_.key ? '#f5f3ff' : 'transparent',
+                  color: tab === tab_.key ? '#4f46e5' : '#6b7280',
+                  fontSize: 13, fontWeight: tab === tab_.key ? 600 : 500,
                   transition: 'all 0.1s', textAlign: 'left',
                 }}
               >
-                {t.icon}
-                {t.label}
+                {tab_.icon}
+                {t(`settings.tabs.${tab_.label}`)}
               </button>
             ))}
           </div>
@@ -333,7 +337,7 @@ export default function SettingsPage() {
           {/* ── NOTIFICATIONS ── */}
           {tab === 'notifications' && (
             <>
-              <Section title="Email Alerts">
+              <Section title={t('settings.sections.emailAlerts')}>
                 <Field label="New application submitted" hint="Get notified when a prospective tenant submits an application.">
                   <Toggle checked={settings.notifyNewApplication} onChange={v => set('notifyNewApplication', v)} />
                 </Field>
@@ -367,7 +371,7 @@ export default function SettingsPage() {
                 </Field>
               </Section>
 
-              <Section title="Digest & Delivery">
+              <Section title={t('settings.sections.digestDelivery')}>
                 <Field label="Email digest frequency" hint="How often to bundle activity into a summary email.">
                   <select
                     value={settings.emailDigestFrequency}
@@ -382,7 +386,7 @@ export default function SettingsPage() {
                 </Field>
               </Section>
 
-              <Section title="SMS Notifications">
+              <Section title={t('settings.sections.smsNotifications')}>
                 <Field label="Enable SMS alerts" hint="Receive critical alerts via text message. Standard rates apply.">
                   <Toggle checked={settings.smsNotificationsEnabled} onChange={v => set('smsNotificationsEnabled', v)} />
                 </Field>
@@ -403,7 +407,7 @@ export default function SettingsPage() {
           {/* ── RENT & FEES ── */}
           {tab === 'rent' && (
             <>
-              <Section title="Grace Period & Late Fees">
+              <Section title={t('settings.sections.gracePeriod')}>
                 <Field label="Default grace period" hint="Days after the due date before a payment is considered late.">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <input
@@ -454,7 +458,7 @@ export default function SettingsPage() {
                 )}
               </Section>
 
-              <Section title="Lease Defaults">
+              <Section title={t('settings.sections.leaseDefaults')}>
                 <Field label="Default lease duration" hint="Pre-filled when creating a new lease.">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <input
@@ -467,7 +471,7 @@ export default function SettingsPage() {
                 </Field>
               </Section>
 
-              <Section title="Reminders & Notices">
+              <Section title={t('settings.sections.remindersNotices')}>
                 <Field label="Rent reminder emails" hint="Automatically send tenants a reminder before rent is due.">
                   <Toggle checked={settings.rentReminderEnabled} onChange={v => set('rentReminderEnabled', v)} />
                 </Field>
@@ -493,7 +497,7 @@ export default function SettingsPage() {
           {/* ── APPLICATIONS ── */}
           {tab === 'applications' && (
             <>
-              <Section title="AI Screening">
+              <Section title={t('settings.sections.aiScreening')}>
                 <Field label="Warning threshold" hint="Applications below this AI score will be flagged as higher risk.">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <input
@@ -528,7 +532,7 @@ export default function SettingsPage() {
                 )}
               </Section>
 
-              <Section title="Required Verifications">
+              <Section title={t('settings.sections.requiredVerifications')}>
                 <Field label="Require Plaid income verification" hint="Applications without verified income will be marked incomplete.">
                   <Toggle checked={settings.requirePlaidIncome} onChange={v => set('requirePlaidIncome', v)} />
                 </Field>
@@ -542,7 +546,7 @@ export default function SettingsPage() {
           {/* ── MAINTENANCE ── */}
           {tab === 'maintenance' && (
             <>
-              <Section title="Defaults">
+              <Section title={t('settings.sections.defaults')}>
                 <Field label="Default priority" hint="Pre-selected priority level when a tenant submits a new request.">
                   <select
                     value={settings.defaultMaintenancePriority}
@@ -557,7 +561,7 @@ export default function SettingsPage() {
                 </Field>
               </Section>
 
-              <Section title="Note Template">
+              <Section title={t('settings.sections.noteTemplate')}>
                 <div style={{ paddingBottom: 14 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, color: '#0d0f18', marginBottom: 4 }}>Landlord notes template</div>
                   <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 8 }}>Pre-populated text for your internal notes on new maintenance requests.</div>
@@ -576,7 +580,7 @@ export default function SettingsPage() {
           {/* ── TENANT PORTAL ── */}
           {tab === 'portal' && (
             <>
-              <Section title="Features">
+              <Section title={t('settings.sections.features')}>
                 <Field label="Tenant messaging" hint="Allow tenants to send you messages through the portal.">
                   <Toggle checked={settings.tenantMessagingEnabled} onChange={v => set('tenantMessagingEnabled', v)} />
                 </Field>
@@ -594,7 +598,7 @@ export default function SettingsPage() {
           {tab === 'payments' && (
             <>
               <PayoutsSection />
-              <Section title="ACH (Bank Transfer)">
+              <Section title={t('settings.sections.ach')}>
                 <Field label="Accept ACH payments" hint="Allow tenants to pay rent via bank transfer.">
                   <Toggle checked={settings.achEnabled} onChange={v => set('achEnabled', v)} />
                 </Field>
@@ -613,7 +617,7 @@ export default function SettingsPage() {
                 )}
               </Section>
 
-              <Section title="Card Payments">
+              <Section title={t('settings.sections.cardPayments')}>
                 <Field label="Accept card payments" hint="Allow tenants to pay rent via credit or debit card.">
                   <Toggle checked={settings.cardEnabled} onChange={v => set('cardEnabled', v)} />
                 </Field>
@@ -636,8 +640,8 @@ export default function SettingsPage() {
           {/* ── ACCOUNT ── */}
           {tab === 'account' && (
             <>
-              <Section title="Branding">
-                <Field label="Company / business name" hint="Shown on emails and tenant-facing pages. Leave blank to use your full name.">
+              <Section title={t('settings.sections.branding')}>
+                <Field label={t('settings.fields.companyName')} hint="Shown on emails and tenant-facing pages. Leave blank to use your full name.">
                   <input
                     type="text" value={settings.companyName}
                     onChange={e => set('companyName', e.target.value)}
@@ -647,8 +651,8 @@ export default function SettingsPage() {
                 </Field>
               </Section>
 
-              <Section title="Regional">
-                <Field label="Timezone" hint="Used for scheduling reminders and displaying dates.">
+              <Section title={t('settings.sections.regional')}>
+                <Field label={t('settings.fields.timezone')} hint="Used for scheduling reminders and displaying dates.">
                   <select
                     value={settings.timezone}
                     onChange={e => set('timezone', e.target.value)}
@@ -659,7 +663,7 @@ export default function SettingsPage() {
                     ))}
                   </select>
                 </Field>
-                <Field label="Language" hint="Interface and outgoing email language.">
+                <Field label={t('settings.fields.language')} hint="Interface and outgoing email language.">
                   <select
                     value={settings.language}
                     onChange={e => set('language', e.target.value)}

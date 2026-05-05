@@ -1,0 +1,56 @@
+{
+  "nav": {
+    "main": "Hauptmenü",
+    "dashboard": "Dashboard",
+    "properties": "Immobilien",
+    "tenants": "Mieter",
+    "leases": "Mietverträge",
+    "payments": "Zahlungen",
+    "screening": "Bewerberprüfung",
+    "messages": "Nachrichten",
+    "settings": "Einstellungen"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "subtitle": "Passen Sie Zenant für Ihr Portfolio an",
+    "saveChanges": "Speichern",
+    "saving": "Speichern…",
+    "saved": "Gespeichert!",
+    "tabs": {
+      "notifications": "Benachrichtigungen",
+      "rent": "Miete & Gebühren",
+      "applications": "Bewerbungen",
+      "maintenance": "Wartung",
+      "portal": "Mieterportal",
+      "payments": "Zahlungen",
+      "account": "Konto"
+    },
+    "sections": {
+      "emailAlerts": "E-Mail-Benachrichtigungen",
+      "digestDelivery": "Zusammenfassung & Versand",
+      "smsNotifications": "SMS-Benachrichtigungen",
+      "gracePeriod": "Kulanzzeit & Mahngebühren",
+      "leaseDefaults": "Vertragsvorgaben",
+      "remindersNotices": "Erinnerungen & Hinweise",
+      "aiScreening": "KI-Prüfung",
+      "requiredVerifications": "Erforderliche Prüfungen",
+      "defaults": "Standards",
+      "noteTemplate": "Notizvorlage",
+      "features": "Funktionen",
+      "ach": "ACH (Banküberweisung)",
+      "cardPayments": "Kartenzahlung",
+      "payouts": "Auszahlungen",
+      "branding": "Marke",
+      "regional": "Regional"
+    },
+    "fields": {
+      "language": "Sprache",
+      "timezone": "Zeitzone",
+      "companyName": "Firmenname"
+    }
+  },
+  "common": {
+    "signOut": "Abmelden",
+    "propertyManagement": "Immobilienverwaltung"
+  }
+}

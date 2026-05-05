@@ -1,0 +1,56 @@
+{
+  "nav": {
+    "main": "Principal",
+    "dashboard": "Painel",
+    "properties": "Imóveis",
+    "tenants": "Inquilinos",
+    "leases": "Contratos",
+    "payments": "Pagamentos",
+    "screening": "Triagem",
+    "messages": "Mensagens",
+    "settings": "Configurações"
+  },
+  "settings": {
+    "title": "Configurações",
+    "subtitle": "Personalize como o Zenant funciona para seu portfólio",
+    "saveChanges": "Salvar alterações",
+    "saving": "Salvando…",
+    "saved": "Salvo!",
+    "tabs": {
+      "notifications": "Notificações",
+      "rent": "Aluguel & Taxas",
+      "applications": "Candidaturas",
+      "maintenance": "Manutenção",
+      "portal": "Portal do inquilino",
+      "payments": "Pagamentos",
+      "account": "Conta"
+    },
+    "sections": {
+      "emailAlerts": "Alertas por e-mail",
+      "digestDelivery": "Resumo & Entrega",
+      "smsNotifications": "Notificações SMS",
+      "gracePeriod": "Período de carência & Multas",
+      "leaseDefaults": "Padrões do contrato",
+      "remindersNotices": "Lembretes & Avisos",
+      "aiScreening": "Triagem por IA",
+      "requiredVerifications": "Verificações necessárias",
+      "defaults": "Padrões",
+      "noteTemplate": "Modelo de notas",
+      "features": "Funcionalidades",
+      "ach": "ACH (Transferência bancária)",
+      "cardPayments": "Pagamento por cartão",
+      "payouts": "Repasses",
+      "branding": "Marca",
+      "regional": "Regional"
+    },
+    "fields": {
+      "language": "Idioma",
+      "timezone": "Fuso horário",
+      "companyName": "Nome da empresa"
+    }
+  },
+  "common": {
+    "signOut": "Sair",
+    "propertyManagement": "Gestão de imóveis"
+  }
+}

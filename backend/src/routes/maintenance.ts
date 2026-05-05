@@ -1,6 +1,8 @@
 import { Router, Response } from 'express'
 import { prisma } from '../lib/prisma'
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth'
+import { getLandlordSettings } from '../lib/settingsHelper'
+import { sendMaintenanceStatusUpdate } from '../lib/email'
 
 export const maintenanceRouter = Router()
 
@@ -46,9 +48,21 @@ maintenanceRouter.patch('/:id', requireAuth, async (req, res: Response) => {
       },
       include: {
         unit: { include: { property: { select: { name: true } } } },
-        tenant: { select: { firstName: true, lastName: true } },
+        tenant: { select: { id: true, firstName: true, lastName: true, email: true } },
       },
     })
+
+    // Notify tenant if landlord has that setting on
+    const settings = await getLandlordSettings(user.id).catch(() => null)
+    if (settings?.notifyMaintenanceUpdated && updated.tenant?.email) {
+      sendMaintenanceStatusUpdate({
+        toEmail: updated.tenant.email,
+        tenantName: `${updated.tenant.firstName} ${updated.tenant.lastName}`.trim(),
+        title: updated.title,
+        status,
+      }).catch(console.error)
+    }
+
     res.json(updated)
   } catch (err) {
     res.status(500).json({ error: 'Failed to update request' })

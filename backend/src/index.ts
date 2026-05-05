@@ -19,6 +19,7 @@ import { invitesRouter } from './routes/invites'
 import { maintenanceRouter } from './routes/maintenance'
 import { settingsRouter } from './routes/settings'
 import { connectRouter } from './routes/connect'
+import { cronRouter } from './routes/cron'
 
 const app = express()
 const PORT = process.env.PORT ?? 3001
@@ -88,6 +89,9 @@ app.use('/api/settings', settingsRouter)
 
 // Stripe Connect
 app.use('/api/connect', connectRouter)
+
+// Cron jobs
+app.use('/api/cron', cronRouter)
 
 // Remaining webhooks (Clerk, etc.) — JSON body
 app.use('/api/webhooks', webhooksRouter)

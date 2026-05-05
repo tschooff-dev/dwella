@@ -1,0 +1,56 @@
+{
+  "nav": {
+    "main": "Principal",
+    "dashboard": "Tableau de bord",
+    "properties": "Propriétés",
+    "tenants": "Locataires",
+    "leases": "Baux",
+    "payments": "Paiements",
+    "screening": "Sélection",
+    "messages": "Messages",
+    "settings": "Paramètres"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Personnalisez le fonctionnement de Zenant pour votre portefeuille",
+    "saveChanges": "Enregistrer",
+    "saving": "Enregistrement…",
+    "saved": "Enregistré !",
+    "tabs": {
+      "notifications": "Notifications",
+      "rent": "Loyer & Frais",
+      "applications": "Candidatures",
+      "maintenance": "Maintenance",
+      "portal": "Portail locataire",
+      "payments": "Paiements",
+      "account": "Compte"
+    },
+    "sections": {
+      "emailAlerts": "Alertes par e-mail",
+      "digestDelivery": "Résumé & Livraison",
+      "smsNotifications": "Notifications SMS",
+      "gracePeriod": "Délai de grâce & Pénalités",
+      "leaseDefaults": "Paramètres du bail",
+      "remindersNotices": "Rappels & Avis",
+      "aiScreening": "Sélection IA",
+      "requiredVerifications": "Vérifications requises",
+      "defaults": "Par défaut",
+      "noteTemplate": "Modèle de note",
+      "features": "Fonctionnalités",
+      "ach": "ACH (Virement bancaire)",
+      "cardPayments": "Paiement par carte",
+      "payouts": "Virements",
+      "branding": "Image de marque",
+      "regional": "Régional"
+    },
+    "fields": {
+      "language": "Langue",
+      "timezone": "Fuseau horaire",
+      "companyName": "Nom de l'entreprise"
+    }
+  },
+  "common": {
+    "signOut": "Se déconnecter",
+    "propertyManagement": "Gestion immobilière"
+  }
+}

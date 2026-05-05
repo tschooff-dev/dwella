@@ -2,6 +2,8 @@ import { Router, Response } from 'express'
 import { prisma } from '../lib/prisma'
 import { stripe } from '../lib/stripe'
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth'
+import { getLandlordSettings } from '../lib/settingsHelper'
+import { sendMaintenanceAlert } from '../lib/email'
 
 export const tenantRouter = Router()
 
@@ -183,8 +185,29 @@ tenantRouter.post('/maintenance', requireAuth, async (req, res: Response) => {
         priority: priority ?? 'MEDIUM',
         status: 'OPEN',
       },
-      include: { unit: { include: { property: { select: { name: true } } } } },
+      include: { unit: { include: { property: { include: { landlord: { select: { id: true, email: true, firstName: true, lastName: true } } } } } } },
     })
+
+    // Notify landlord
+    const landlord = request.unit.property.landlord
+    const settings = await getLandlordSettings(landlord.id).catch(() => null)
+    const isUrgent = (priority ?? 'MEDIUM') === 'URGENT'
+    if (
+      settings?.notifyMaintenanceSubmitted &&
+      settings.emailDigestFrequency === 'immediate' &&
+      (!settings.notifyUrgentMaintenanceOnly || isUrgent)
+    ) {
+      sendMaintenanceAlert({
+        toEmail: landlord.email,
+        landlordName: `${landlord.firstName} ${landlord.lastName}`.trim(),
+        tenantName: `${user.firstName} ${user.lastName}`.trim(),
+        propertyName: request.unit.property.name,
+        unitNumber: request.unit.unitNumber,
+        title,
+        priority: priority ?? 'MEDIUM',
+      }).catch(console.error)
+    }
+
     res.status(201).json(request)
   } catch (err) {
     res.status(500).json({ error: 'Failed to create maintenance request' })

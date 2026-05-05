@@ -1,12 +1,13 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useUser, useClerk } from '@clerk/clerk-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useApi } from '../../lib/api'
+import { useSettings } from '../../lib/settings-context'
 import Avatar from '../ui/Avatar'
 
-const NAV = [
-  {
-    label: 'Dashboard',
+const NAV_KEYS = [
+  { key: 'dashboard',
     to: '/landlord/dashboard',
     icon: (
       <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -14,8 +15,7 @@ const NAV = [
       </svg>
     ),
   },
-  {
-    label: 'Properties',
+  { key: 'properties',
     to: '/landlord/properties',
     icon: (
       <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,8 +23,7 @@ const NAV = [
       </svg>
     ),
   },
-  {
-    label: 'Tenants',
+  { key: 'tenants',
     to: '/landlord/tenants',
     icon: (
       <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -32,8 +31,7 @@ const NAV = [
       </svg>
     ),
   },
-  {
-    label: 'Leases',
+  { key: 'leases',
     to: '/landlord/leases',
     icon: (
       <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,8 +39,7 @@ const NAV = [
       </svg>
     ),
   },
-  {
-    label: 'Payments',
+  { key: 'payments',
     to: '/landlord/payments',
     icon: (
       <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,8 +47,7 @@ const NAV = [
       </svg>
     ),
   },
-  {
-    label: 'Screening',
+  { key: 'screening',
     to: '/landlord/screening',
     icon: (
       <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,8 +55,7 @@ const NAV = [
       </svg>
     ),
   },
-  {
-    label: 'Messages',
+  { key: 'messages',
     to: '/landlord/messages',
     icon: (
       <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,8 +63,7 @@ const NAV = [
       </svg>
     ),
   },
-  {
-    label: 'Settings',
+  { key: 'settings',
     to: '/landlord/settings',
     icon: (
       <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,6 +89,8 @@ export default function Sidebar() {
   const { user } = useUser()
   const { signOut } = useClerk()
   const { apiFetch } = useApi()
+  const { t } = useTranslation()
+  const { settings } = useSettings()
   const [unread, setUnread] = useState(0)
 
   useEffect(() => {
@@ -123,16 +119,18 @@ export default function Sidebar() {
             <path fillRule="evenodd" d="M9 48 L9 24 A17 17 0 0 1 43 24 L43 48 Z M19 48 L19 37 Q19 33 26 33 Q33 33 33 37 L33 48 Z" fill="#818cf8" />
           </svg>
           <div>
-            <div style={{ fontSize: 17, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>Zenant</div>
-            <div style={{ fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 2 }}>Property Management</div>
+            <div style={{ fontSize: 17, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>
+              {settings?.companyName || 'Zenant'}
+            </div>
+            <div style={{ fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 2 }}>{t('common.propertyManagement')}</div>
           </div>
         </div>
       </div>
 
       {/* Nav */}
       <nav style={{ flex: 1, padding: '16px 10px', overflowY: 'auto' }}>
-        <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 10px', marginBottom: 8 }}>Main</div>
-        {NAV.map(item => (
+        <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 10px', marginBottom: 8 }}>{t('nav.main')}</div>
+        {NAV_KEYS.map(item => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -169,9 +167,9 @@ export default function Sidebar() {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               {item.icon}
-              {item.label}
+              {t(`nav.${item.key}`)}
             </div>
-            {item.label === 'Messages' && unread > 0 && (
+            {item.key === 'messages' && unread > 0 && (
               <div
                 style={{
                   width: 18,
@@ -209,7 +207,7 @@ export default function Sidebar() {
           </div>
           <button
             onClick={() => signOut(() => navigate('/sign-in'))}
-            title="Sign out"
+            title={t('common.signOut')}
             style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', padding: 4 }}
             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.7)' }}
             onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.3)' }}

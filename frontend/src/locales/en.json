@@ -1,0 +1,56 @@
+{
+  "nav": {
+    "main": "Main",
+    "dashboard": "Dashboard",
+    "properties": "Properties",
+    "tenants": "Tenants",
+    "leases": "Leases",
+    "payments": "Payments",
+    "screening": "Screening",
+    "messages": "Messages",
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Customize how Zenant works for your portfolio",
+    "saveChanges": "Save Changes",
+    "saving": "Saving…",
+    "saved": "Saved!",
+    "tabs": {
+      "notifications": "Notifications",
+      "rent": "Rent & Fees",
+      "applications": "Applications",
+      "maintenance": "Maintenance",
+      "portal": "Tenant Portal",
+      "payments": "Payments",
+      "account": "Account"
+    },
+    "sections": {
+      "emailAlerts": "Email Alerts",
+      "digestDelivery": "Digest & Delivery",
+      "smsNotifications": "SMS Notifications",
+      "gracePeriod": "Grace Period & Late Fees",
+      "leaseDefaults": "Lease Defaults",
+      "remindersNotices": "Reminders & Notices",
+      "aiScreening": "AI Screening",
+      "requiredVerifications": "Required Verifications",
+      "defaults": "Defaults",
+      "noteTemplate": "Note Template",
+      "features": "Features",
+      "ach": "ACH (Bank Transfer)",
+      "cardPayments": "Card Payments",
+      "payouts": "Payouts",
+      "branding": "Branding",
+      "regional": "Regional"
+    },
+    "fields": {
+      "language": "Language",
+      "timezone": "Timezone",
+      "companyName": "Company / business name"
+    }
+  },
+  "common": {
+    "signOut": "Sign out",
+    "propertyManagement": "Property Management"
+  }
+}
