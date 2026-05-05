@@ -13,6 +13,9 @@ seedRouter.post('/demo', async (req, res: Response) => {
   const LANDLORD_EMAIL = req.body.email ?? 'schoofft@gmail.com'
 
   try {
+    // Ensure column exists in case migration was skipped
+    await prisma.$executeRawUnsafe(`ALTER TABLE maintenance_requests ADD COLUMN IF NOT EXISTS "landlordNotes" TEXT`)
+
     const landlord = await prisma.user.findUnique({ where: { email: LANDLORD_EMAIL } })
     if (!landlord) return res.status(404).json({ error: `No user found: ${LANDLORD_EMAIL}` })
     if (landlord.role !== 'LANDLORD') return res.status(400).json({ error: 'User is not a LANDLORD' })
