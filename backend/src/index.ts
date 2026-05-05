@@ -20,6 +20,7 @@ import { maintenanceRouter } from './routes/maintenance'
 import { settingsRouter } from './routes/settings'
 import { connectRouter } from './routes/connect'
 import { cronRouter } from './routes/cron'
+import { seedRouter } from './routes/seed'
 
 const app = express()
 const PORT = process.env.PORT ?? 3001
@@ -92,6 +93,9 @@ app.use('/api/connect', connectRouter)
 
 // Cron jobs
 app.use('/api/cron', cronRouter)
+
+// Demo seeder (protected by SEED_SECRET env var)
+app.use('/api/seed', seedRouter)
 
 // Remaining webhooks (Clerk, etc.) — JSON body
 app.use('/api/webhooks', webhooksRouter)
