@@ -30,18 +30,29 @@ usersRouter.post('/setup', requireAuth, async (req, res: Response) => {
   }
 
   try {
-    const user = await prisma.user.upsert({
-      where: { clerkId: authReq.auth.userId },
-      update: { firstName, lastName, phone: phone ?? null, role },
-      create: {
-        clerkId: authReq.auth.userId,
-        email: req.body.email ?? '',
-        firstName,
-        lastName,
-        phone: phone ?? null,
-        role,
-      },
-    })
+    const email = req.body.email ?? ''
+    const updateData = { firstName, lastName, phone: phone ?? null, role, clerkId: authReq.auth.userId }
+
+    // Try upsert by clerkId first; if a duplicate email blocks the create,
+    // fall back to finding the existing record by email and updating it.
+    let user
+    try {
+      user = await prisma.user.upsert({
+        where: { clerkId: authReq.auth.userId },
+        update: { firstName, lastName, phone: phone ?? null, role },
+        create: { clerkId: authReq.auth.userId, email, ...updateData },
+      })
+    } catch (upsertErr: any) {
+      if (upsertErr?.code === 'P2002') {
+        user = await prisma.user.update({
+          where: { email },
+          data: updateData,
+        })
+      } else {
+        throw upsertErr
+      }
+    }
+
     res.json(user)
   } catch (err) {
     res.status(500).json({ error: 'Failed to save profile' })
