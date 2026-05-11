@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = new Resend(process.env.RESEND_API_KEY ?? 'missing')
 const FROM = 'Zenant <onboarding@resend.dev>'
 
 function guard() {
