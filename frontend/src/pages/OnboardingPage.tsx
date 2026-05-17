@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUser, useClerk } from '@clerk/clerk-react'
 import { useApi } from '../lib/api'
+import SEO from '../components/ui/SEO'
 
 export default function OnboardingPage() {
   const { user } = useUser()
@@ -90,6 +91,7 @@ export default function OnboardingPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f4f4f8', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <SEO title="Get Started | Zenant" description="Set up your Zenant account and start managing your rental properties in minutes." />
       <div className="card" style={{ width: '100%', maxWidth: 440, padding: 36 }}>
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>

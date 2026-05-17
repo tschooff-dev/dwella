@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from '@clerk/clerk-react'
 import { useEffect, useState } from 'react'
+import LandingPage from './pages/LandingPage'
 import LandlordLayout from './layouts/LandlordLayout'
 import TenantLayout from './layouts/TenantLayout'
 import DashboardPage from './pages/landlord/DashboardPage'
@@ -67,11 +68,18 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+function HomeRoute() {
+  const { isSignedIn, isLoaded } = useAuth()
+  if (!isLoaded) return null
+  if (!isSignedIn) return <LandingPage />
+  return <RoleRedirect />
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<RoleRedirect />} />
+        <Route path="/" element={<HomeRoute />} />
 
         {/* Auth pages */}
         <Route path="/sign-in/*" element={<SignInPage />} />

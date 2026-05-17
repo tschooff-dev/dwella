@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { ClerkProvider } from '@clerk/clerk-react'
+import { HelmetProvider } from 'react-helmet-async'
 import App from './App'
 import './index.css'
 import './lib/i18n'
@@ -14,10 +15,12 @@ if (!publishableKey) {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ClerkProvider publishableKey={publishableKey}>
-      <SettingsProvider>
-        <App />
-      </SettingsProvider>
-    </ClerkProvider>
+    <HelmetProvider>
+      <ClerkProvider publishableKey={publishableKey}>
+        <SettingsProvider>
+          <App />
+        </SettingsProvider>
+      </ClerkProvider>
+    </HelmetProvider>
   </React.StrictMode>
 )

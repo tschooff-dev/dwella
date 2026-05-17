@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useApi } from '../../lib/api'
 import Avatar from '../../components/ui/Avatar'
+import SEO from '../../components/ui/SEO'
 
 interface Conversation {
   leaseId: string
@@ -95,6 +96,7 @@ export default function MessagesPage() {
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '36px 40px 0' }}>
+      <SEO title="Messages | Zenant" description="Communicate with your tenants directly through Zenant." />
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800 }}>Messages</h1>
         <p style={{ fontSize: 13, color: '#6b7280', marginTop: 4 }}>

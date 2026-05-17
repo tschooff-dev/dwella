@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useApi } from '../../lib/api'
 import { useSearchParams } from 'react-router-dom'
 import i18n from '../../lib/i18n'
+import SEO from '../../components/ui/SEO'
 
 type Settings = {
   // Notifications
@@ -287,6 +288,7 @@ export default function SettingsPage() {
 
   return (
     <div style={{ maxWidth: 820, margin: '0 auto', padding: '36px 40px 60px' }}>
+      <SEO title="Settings | Zenant" description="Manage your Zenant account, notification preferences, and payment settings." />
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
         <div>

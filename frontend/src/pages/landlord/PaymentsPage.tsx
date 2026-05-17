@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useApi } from '../../lib/api'
 import Avatar from '../../components/ui/Avatar'
+import SEO from '../../components/ui/SEO'
 
 interface Payment {
   id: string
@@ -159,6 +160,7 @@ export default function PaymentsPage() {
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '36px 40px' }}>
+      <SEO title="Payments | Zenant" description="Track rent payments, outstanding balances, and payment history across all your properties." />
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>

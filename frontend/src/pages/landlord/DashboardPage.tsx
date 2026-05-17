@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { useApi } from '../../lib/api'
 import Avatar from '../../components/ui/Avatar'
+import SEO from '../../components/ui/SEO'
 
 interface Summary {
   totalUnits: number
@@ -137,6 +138,7 @@ export default function DashboardPage() {
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '36px 40px' }}>
+      <SEO title="Dashboard | Zenant" description="Your landlord dashboard — view outstanding payments, expiring leases, and tenant screening status." />
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, color: '#0d0f18' }}>

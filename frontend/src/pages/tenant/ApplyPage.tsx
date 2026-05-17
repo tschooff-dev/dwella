@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import PlaidIncomeButton from '../../components/application/PlaidIncomeButton'
 import StripeIdentityButton from '../../components/application/StripeIdentityButton'
 import DocumentUpload from '../../components/application/DocumentUpload'
+import SEO from '../../components/ui/SEO'
 
 const API = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
 
@@ -223,6 +224,7 @@ export default function ApplyPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
+      <SEO title="Apply for a Rental | Zenant" description="Submit your rental application securely through Zenant. Includes background check, credit, and income verification." />
       <div className="max-w-lg mx-auto">
         {/* Header */}
         <div className="flex items-center gap-2.5 mb-6">

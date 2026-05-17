@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import StatusPill from '../../components/ui/StatusPill'
 import { useApi } from '../../lib/api'
+import SEO from '../../components/ui/SEO'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -776,6 +777,7 @@ export default function PropertiesPage() {
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '36px 40px' }}>
+      <SEO title="Properties | Zenant" description="Manage all your rental properties and units in one place." />
       {/* Header */}
       <div className="flex items-center justify-between mb-7">
         <div>

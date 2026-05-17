@@ -1,6 +1,7 @@
 import { SignIn, SignUp } from '@clerk/clerk-react'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import SEO from '../components/ui/SEO'
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
@@ -376,25 +377,34 @@ export function SignInPage() {
 
   if (isMobile) {
     if (!showForm) return (
-      <MobileSplash
-        onGetStarted={() => navigate('/sign-up')}
-        onSignIn={() => setShowForm(true)}
-      />
+      <>
+        <SEO title="Sign In | Zenant" description="Sign in to your Zenant account to manage your rental properties, collect rent, and screen tenants." />
+        <MobileSplash
+          onGetStarted={() => navigate('/sign-up')}
+          onSignIn={() => setShowForm(true)}
+        />
+      </>
     )
     return (
-      <MobileForm onBack={() => setShowForm(false)} mode="signin">
-        <SignIn routing="path" path="/sign-in" afterSignInUrl="/" appearance={clerkAppearanceMobile} />
-      </MobileForm>
+      <>
+        <SEO title="Sign In | Zenant" description="Sign in to your Zenant account to manage your rental properties, collect rent, and screen tenants." />
+        <MobileForm onBack={() => setShowForm(false)} mode="signin">
+          <SignIn routing="path" path="/sign-in" afterSignInUrl="/" appearance={clerkAppearanceMobile} />
+        </MobileForm>
+      </>
     )
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
-      <LeftPanel />
-      <RightPanel>
-        <SignIn routing="path" path="/sign-in" afterSignInUrl="/" appearance={clerkAppearance} />
-      </RightPanel>
-    </div>
+    <>
+      <SEO title="Sign In | Zenant" description="Sign in to your Zenant account to manage your rental properties, collect rent, and screen tenants." />
+      <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+        <LeftPanel />
+        <RightPanel>
+          <SignIn routing="path" path="/sign-in" afterSignInUrl="/" appearance={clerkAppearance} />
+        </RightPanel>
+      </div>
+    </>
   )
 }
 
@@ -405,24 +415,33 @@ export function SignUpPage() {
 
   if (isMobile) {
     if (!showForm) return (
-      <MobileSplash
-        onGetStarted={() => setShowForm(true)}
-        onSignIn={() => navigate('/sign-in')}
-      />
+      <>
+        <SEO title="Sign In | Zenant" description="Sign in to your Zenant account to manage your rental properties, collect rent, and screen tenants." />
+        <MobileSplash
+          onGetStarted={() => setShowForm(true)}
+          onSignIn={() => navigate('/sign-in')}
+        />
+      </>
     )
     return (
-      <MobileForm onBack={() => setShowForm(false)} mode="signup">
-        <SignUp routing="path" path="/sign-up" afterSignUpUrl="/" appearance={clerkAppearanceMobile} />
-      </MobileForm>
+      <>
+        <SEO title="Sign In | Zenant" description="Sign in to your Zenant account to manage your rental properties, collect rent, and screen tenants." />
+        <MobileForm onBack={() => setShowForm(false)} mode="signup">
+          <SignUp routing="path" path="/sign-up" afterSignUpUrl="/" appearance={clerkAppearanceMobile} />
+        </MobileForm>
+      </>
     )
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
-      <LeftPanel />
-      <RightPanel>
-        <SignUp routing="path" path="/sign-up" afterSignUpUrl="/" appearance={clerkAppearance} />
-      </RightPanel>
-    </div>
+    <>
+      <SEO title="Sign In | Zenant" description="Sign in to your Zenant account to manage your rental properties, collect rent, and screen tenants." />
+      <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+        <LeftPanel />
+        <RightPanel>
+          <SignUp routing="path" path="/sign-up" afterSignUpUrl="/" appearance={clerkAppearance} />
+        </RightPanel>
+      </div>
+    </>
   )
 }

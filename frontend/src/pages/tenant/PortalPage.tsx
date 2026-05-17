@@ -3,6 +3,7 @@ import { useSearchParams, useOutletContext, useNavigate } from 'react-router-dom
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { useApi } from '../../lib/api'
+import SEO from '../../components/ui/SEO'
 import { avatarColor } from '../../components/ui/Avatar'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ?? '')
@@ -884,6 +885,7 @@ export default function PortalPage() {
 
   return (
     <div>
+      <SEO title="Tenant Portal | Zenant" description="Pay rent online, view your lease, and submit maintenance requests through your Zenant tenant portal." />
       {tab === 'overview' && (
         <OverviewTab
           me={me}

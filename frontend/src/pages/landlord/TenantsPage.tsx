@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useApi } from '../../lib/api'
 import Avatar from '../../components/ui/Avatar'
+import SEO from '../../components/ui/SEO'
 
 interface Lease {
   id: string
@@ -337,6 +338,7 @@ export default function TenantsPage() {
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '36px 40px' }}>
+      <SEO title="Tenants | Zenant" description="View and manage all your tenants across your rental portfolio." />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800 }}>Tenants</h1>

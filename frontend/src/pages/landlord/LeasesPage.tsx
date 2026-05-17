@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useApi } from '../../lib/api'
 import Avatar from '../../components/ui/Avatar'
+import SEO from '../../components/ui/SEO'
 
 interface Lease {
   id: string
@@ -256,6 +257,7 @@ export default function LeasesPage() {
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '36px 40px' }}>
+      <SEO title="Leases | Zenant" description="Create, send, and manage digital lease agreements for all your units." />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800 }}>Leases</h1>

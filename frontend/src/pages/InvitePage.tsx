@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth, useUser, SignIn } from '@clerk/clerk-react'
 import { useApi } from '../lib/api'
+import SEO from '../components/ui/SEO'
 
 interface InviteInfo {
   email: string
@@ -67,6 +68,7 @@ export default function InvitePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <SEO title="You've Been Invited | Zenant" description="Accept your invitation to join Zenant and access your tenant portal." />
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">

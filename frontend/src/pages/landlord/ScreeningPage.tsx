@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useApi } from '../../lib/api'
+import SEO from '../../components/ui/SEO'
 
 interface Application {
   id: string
@@ -260,6 +261,7 @@ export default function ScreeningPage() {
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '36px 40px' }}>
+      <SEO title="Tenant Screening | Zenant" description="AI-powered tenant screening with background checks, credit reports, and income verification." />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800 }}>Screening</h1>
