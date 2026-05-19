@@ -1,4 +1,3 @@
-import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { ClerkProvider } from '@clerk/clerk-react'
 import { HelmetProvider } from 'react-helmet-async'
@@ -14,13 +13,11 @@ if (!publishableKey) {
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <HelmetProvider>
-      <ClerkProvider publishableKey={publishableKey}>
-        <SettingsProvider>
-          <App />
-        </SettingsProvider>
-      </ClerkProvider>
-    </HelmetProvider>
-  </React.StrictMode>
+  <HelmetProvider>
+    <ClerkProvider publishableKey={publishableKey}>
+      <SettingsProvider>
+        <App />
+      </SettingsProvider>
+    </ClerkProvider>
+  </HelmetProvider>
 )
