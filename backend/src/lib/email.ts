@@ -1,7 +1,7 @@
 import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY ?? 'missing')
-const FROM = 'Zenant <onboarding@resend.dev>'
+const FROM = process.env.EMAIL_FROM ?? 'Zenant <onboarding@resend.dev>'
 
 function guard() {
   if (!process.env.RESEND_API_KEY) {

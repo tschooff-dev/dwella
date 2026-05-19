@@ -130,6 +130,26 @@ tenantsRouter.post('/', requireAuth, async (req, res: Response) => {
     // Mark unit as occupied
     await prisma.unit.update({ where: { id: unitId }, data: { status: 'OCCUPIED' } })
 
+    // Auto-generate a DUE payment record for every month of the lease
+    // so the tenant has something to pay immediately without a manual landlord step
+    const leaseStart = new Date(startDate)
+    const leaseEnd = new Date(endDate)
+    const paymentsToCreate: { leaseId: string; tenantId: string; amount: number; dueDate: Date; status: 'DUE' }[] = []
+    const cursor = new Date(leaseStart.getFullYear(), leaseStart.getMonth(), 1)
+    while (cursor <= leaseEnd) {
+      paymentsToCreate.push({
+        leaseId: lease.id,
+        tenantId: tenant.id,
+        amount: Number(rentAmount),
+        dueDate: new Date(cursor),
+        status: 'DUE',
+      })
+      cursor.setMonth(cursor.getMonth() + 1)
+    }
+    if (paymentsToCreate.length > 0) {
+      await prisma.payment.createMany({ data: paymentsToCreate })
+    }
+
     // Auto-generate invite token
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 7)
